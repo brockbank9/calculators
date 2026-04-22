@@ -42,8 +42,12 @@ window.ret02Ui = (() => {
     };
   }
 
-  function fmtCurrency(value) {
-    return currency.format(value);
+  function fmtCurrency(value, showSymbol = false) {
+    const rounded = Math.round(value);
+    const formatted = Math.abs(rounded).toLocaleString("en-US");
+    const prefix = rounded < 0 ? "-" : "";
+    const dollar = showSymbol ? "$" : "";
+    return `${prefix}${dollar}${formatted}`;
   }
 
   function renderMessages(model, input) {
@@ -62,7 +66,12 @@ window.ret02Ui = (() => {
     document.getElementById("metrics").innerHTML = "";
   }
 
-  function renderTable(model) {
+  function moneyCell(value, showSymbol) {
+    const negative = value < 0 ? ' negative' : '';
+    return `<td class="money${negative}">${fmtCurrency(value, showSymbol)}</td>`;
+  }
+
+  function renderTable(model, input) {
     document.querySelector("#projectionTable thead").innerHTML = `
       <tr>
         <th>Year</th>
@@ -77,19 +86,23 @@ window.ret02Ui = (() => {
         <th>End Balance</th>
       </tr>`;
 
-    document.querySelector("#projectionTable tbody").innerHTML = model.rows.map((row) => `
-      <tr>
-        <td>${row.year}</td>
-        <td>${row.age}</td>
-        <td>${fmtCurrency(row.salary)}</td>
-        <td>${fmtCurrency(row.beginningBalance)}</td>
-        <td>${fmtCurrency(row.interest)}</td>
-        <td>${fmtCurrency(row.savings)}</td>
-        <td>${fmtCurrency(row.desiredIncome)}</td>
-        <td>${fmtCurrency(row.ssIncome)}</td>
-        <td>${fmtCurrency(row.withdrawals)}</td>
-        <td>${fmtCurrency(row.endingBalance)}</td>
-      </tr>`).join("");
+    document.querySelector("#projectionTable tbody").innerHTML = model.rows.map((row, index) => {
+      const showSymbol = index === 0;
+      const retireClass = row.age === input.retireAge ? ' class="retirement-row"' : '';
+      return `
+        <tr${retireClass}>
+          <td>${row.year}</td>
+          <td>${row.age}</td>
+          ${moneyCell(row.salary, showSymbol)}
+          ${moneyCell(row.beginningBalance, showSymbol)}
+          ${moneyCell(row.interest, showSymbol)}
+          ${moneyCell(row.savings, showSymbol)}
+          ${moneyCell(row.desiredIncome, showSymbol)}
+          ${moneyCell(row.ssIncome, showSymbol)}
+          ${moneyCell(row.withdrawals, showSymbol)}
+          ${moneyCell(row.endingBalance, showSymbol)}
+        </tr>`;
+    }).join("");
   }
 
   function renderChart(model) {
@@ -186,7 +199,7 @@ window.ret02Ui = (() => {
     const input = readInputs();
     const model = window.ret02Model.compute(input);
     renderMessages(model, input);
-    renderTable(model);
+    renderTable(model, input);
     renderChart(model);
   }
 
