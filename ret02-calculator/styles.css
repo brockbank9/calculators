@@ -1,2 +1,7 @@
 body { font-family: Arial; margin: 40px; }
 h1 { color: #333; }
+
+#projectionChart {
+  width: 100%;
+  height: 420px;
+}
