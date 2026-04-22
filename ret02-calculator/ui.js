@@ -97,44 +97,64 @@ window.ret02Ui = (() => {
     const ctx = canvas.getContext("2d");
     const dpr = window.devicePixelRatio || 1;
     const width = canvas.clientWidth || 1000;
-    const height = canvas.clientHeight || 320;
+    const height = 400;
+
     canvas.width = width * dpr;
     canvas.height = height * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, width, height);
 
-    const pad = { top: 12, right: 16, bottom: 28, left: 56 };
+    // Title
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#111";
+    ctx.fillText("Retirement Analysis", width / 2 - 80, 20);
+
+    const pad = { top: 50, right: 20, bottom: 60, left: 60 };
     const plotW = width - pad.left - pad.right;
     const plotH = height - pad.top - pad.bottom;
+
     const series = [
-      { key: "endingBalance", values: model.rows.map(r => r.endingBalance), color: "#111827" },
-      { key: "desiredIncome", values: model.rows.map(r => r.desiredIncome), color: "#4f46e5" },
-      { key: "ssIncome", values: model.rows.map(r => r.ssIncome), color: "#059669" }
+      { values: model.rows.map(r => r.endingBalance), color: "#111827", label: "End Balance" },
+      { values: model.rows.map(r => r.desiredIncome), color: "#4f46e5", label: "Desired Income" },
+      { values: model.rows.map(r => r.ssIncome), color: "#059669", label: "SS Income" }
     ];
+
     const maxVal = Math.max(...series.flatMap(s => s.values), 1);
 
     ctx.strokeStyle = "#e5e7eb";
-    for (let i = 0; i <= 4; i += 1) {
+    for (let i = 0; i <= 4; i++) {
       const y = pad.top + (plotH / 4) * i;
       ctx.beginPath();
       ctx.moveTo(pad.left, y);
       ctx.lineTo(width - pad.right, y);
       ctx.stroke();
-      ctx.fillStyle = "#6b7280";
-      ctx.font = "12px Arial";
-      ctx.fillText(currency.format(maxVal * (1 - i / 4)), 6, y + 4);
     }
 
-    series.forEach((s) => {
+    series.forEach(s => {
       ctx.strokeStyle = s.color;
       ctx.lineWidth = 2;
       ctx.beginPath();
-      s.values.forEach((value, index) => {
-        const x = pad.left + (plotW * index) / Math.max(model.rows.length - 1, 1);
-        const y = pad.top + plotH - (value / maxVal) * plotH;
-        if (index === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      s.values.forEach((v, i) => {
+        const x = pad.left + (plotW * i) / Math.max(model.rows.length - 1, 1);
+        const y = pad.top + plotH - (v / maxVal) * plotH;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
       });
       ctx.stroke();
+    });
+
+    // X-axis label
+    ctx.fillStyle = "#333";
+    ctx.font = "12px Arial";
+    ctx.fillText("Age", width / 2 - 15, height - 10);
+
+    // Legend
+    series.forEach((s, i) => {
+      const x = pad.left + i * 150;
+      ctx.fillStyle = s.color;
+      ctx.fillRect(x, 30, 12, 12);
+      ctx.fillStyle = "#333";
+      ctx.fillText(s.label, x + 18, 40);
     });
   }
 
