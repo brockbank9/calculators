@@ -66,9 +66,14 @@ window.ret02Ui = (() => {
     document.getElementById("metrics").innerHTML = "";
   }
 
-  function moneyCell(value, showSymbol) {
+  function moneyCell(value, showSymbol, extraClass = "") {
     const negative = value < 0 ? ' negative' : '';
-    return `<td class="money${negative}">${fmtCurrency(value, showSymbol)}</td>`;
+    return `<td class="money${negative}${extraClass ? ` ${extraClass}` : ""}">${fmtCurrency(value, showSymbol)}</td>`;
+  }
+
+  function withdrawalCell(value, showSymbol) {
+    const colorClass = value > 0 ? ' positive-withdrawal' : value < 0 ? ' negative-withdrawal' : '';
+    return moneyCell(value, showSymbol, colorClass);
   }
 
   function renderTable(model, input) {
@@ -77,13 +82,13 @@ window.ret02Ui = (() => {
         <th>Year</th>
         <th>Age</th>
         <th>Salary</th>
-        <th>Beg Balance</th>
+        <th>Beginning Balance</th>
         <th>Interest</th>
         <th>Savings</th>
-        <th>Desired Inc</th>
-        <th>SS Inc</th>
+        <th>Desired Income</th>
+        <th>Social Security</th>
         <th>Withdrawals</th>
-        <th>End Balance</th>
+        <th>Ending Balance</th>
       </tr>`;
 
     document.querySelector("#projectionTable tbody").innerHTML = model.rows.map((row, index) => {
@@ -91,15 +96,15 @@ window.ret02Ui = (() => {
       const retireClass = row.age === input.retireAge ? ' class="retirement-row"' : '';
       return `
         <tr${retireClass}>
-          <td>${row.year}</td>
-          <td>${row.age}</td>
+          <td class="text-center">${row.year}</td>
+          <td class="text-center">${row.age}</td>
           ${moneyCell(row.salary, showSymbol)}
           ${moneyCell(row.beginningBalance, showSymbol)}
           ${moneyCell(row.interest, showSymbol)}
           ${moneyCell(row.savings, showSymbol)}
           ${moneyCell(row.desiredIncome, showSymbol)}
           ${moneyCell(row.ssIncome, showSymbol)}
-          ${moneyCell(row.withdrawals, showSymbol)}
+          ${withdrawalCell(row.withdrawals, showSymbol)}
           ${moneyCell(row.endingBalance, showSymbol)}
         </tr>`;
     }).join("");
