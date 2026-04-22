@@ -17,7 +17,6 @@ window.ret02Ui = (() => {
   const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
   const number1 = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
   const percent1 = new Intl.NumberFormat("en-US", { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
-  const percent2 = new Intl.NumberFormat("en-US", { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   function fillDefaults() {
     Object.entries(defaults).forEach(([key, value]) => { document.getElementById(key).value = value; });
@@ -43,55 +42,54 @@ window.ret02Ui = (() => {
   function fmt(value, kind = "currency") {
     if (kind === "int") return Number(value).toLocaleString("en-US");
     if (kind === "percent1") return percent1.format(value);
-    if (kind === "percent2") return percent2.format(value);
     if (kind === "number1") return number1.format(value);
     return currency.format(value);
   }
 
   function renderMessages(model, input) {
     const ageMessage = Math.round(input.currentAge + model.yearsUntilRetirement + model.yearsOfRetirement);
-    const primary = model.currentSavePct < 0
+
+    const ResultsParagraph1 = model.currentSavePct < 0
       ? `Congratulations!!! It appears that you have saved enough to meet your goal. In fact, it appears that at age ${ageMessage} you will still have ${currency.format(model.finalRow.endingBalance)} in your retirement accounts.`
       : `To provide the inflation-adjusted retirement income you desire, you will need to save ${percent1.format(model.currentSavePct)} of your yearly income (less any employer match, if applicable). This year, for example, the amount would be ${currency.format(model.currentAnnualSave)} or ${currency.format(model.currentAnnualSave / 12)} a month.`;
-    const wait = model.yearsUntilRetirement < 2 || model.currentSavePct < 0 || model.waitSavePct === 0
-      ? " "
+
+    const ResultsParagraph2 = model.yearsUntilRetirement < 2 || model.currentSavePct < 0 || model.waitSavePct === 0
+      ? ""
       : `If you wait just one year to start saving for retirement you will need to save ${percent1.format(model.waitSavePct)} of your annual income, which amounts to ${currency.format(model.waitAnnualSave)} in the first year. Save Now and Save Less!!!`;
-    document.getElementById("primaryMessage").textContent = primary;
-    document.getElementById("waitMessage").textContent = wait;
-  }
 
-  function renderMetrics(model) {
-    const metrics = [
-      ["Years until retirement", fmt(model.yearsUntilRetirement, "int"), ""],
-      ["Years of retirement", fmt(model.yearsOfRetirement, "int"), ""],
-      ["Amount needed at retirement", fmt(model.amountNeededAtRetirement), "Workbook cell G37"],
-      ["Current annual amount to save", fmt(model.currentAnnualSave), "Workbook cell G32"],
-      ["Current % of income to save", fmt(model.currentSavePct, "percent1"), "Workbook cell G31"],
-      ["Cost of waiting annual amount", fmt(model.waitAnnualSave), "Workbook cell G35"],
-      ["Cost of waiting % of income", fmt(model.waitSavePct, "percent1"), "Workbook cell G34"],
-      ["Social Security monthly benefit", currency.format(model.ssMonthly), "Govt Programs!E22 monthly"],
-      ["Social Security annual benefit", fmt(model.ssAnnualBase), ""]
-    ];
-    document.getElementById("metrics").innerHTML = metrics.map(([label, value, note]) => `<div class="metric"><div class="label">${label}</div><div class="value">${value}</div><div class="note">${note}</div></div>`).join("");
-
-    const audit = [
-      ["Current combined income", fmt(model.currentCombinedIncome), "IO!G41"],
-      ["Expected salary increase", fmt(model.salaryIncrease, "percent2"), "IO!G43"],
-      ["AIME client", currency.format(model.aimeClient), "Govt Programs!E12 monthly"],
-      ["AIME spouse", currency.format(model.aimeSpouse), "Govt Programs!F12 monthly"],
-      ["PIA client", currency.format(model.piaClient), "Govt Programs!E13 monthly"],
-      ["PIA spouse", currency.format(model.piaSpouse), "Govt Programs!F13 monthly"],
-      ["Maximum family benefit", currency.format(model.maxFamilyBenefit), "Govt Programs!E5 monthly"],
-      ["Full benefits age", fmt(model.fullBenefitsAge, "int"), "Govt Programs!E17"],
-      ["Years difference", fmt(model.yearsDifference, "number1"), "Govt Programs!E18"],
-      ["SS adjustment", fmt(model.ssAdjustment, "percent2"), "Govt Programs!E19"]
-    ];
-    document.getElementById("auditMetrics").innerHTML = audit.map(([label, value, note]) => `<div class="metric"><div class="label">${label}</div><div class="value">${value}</div><div class="note">${note}</div></div>`).join("");
+    document.getElementById("primaryMessage").textContent = ResultsParagraph1;
+    document.getElementById("waitMessage").textContent = ResultsParagraph2;
+    document.getElementById("metrics").innerHTML = "";
   }
 
   function renderTable(model) {
-    document.querySelector("#projectionTable thead").innerHTML = `<tr><th>Year</th><th>Age</th><th>Salary</th><th>Beg Balance</th><th>Interest</th><th>Savings</th><th>Desired Inc</th><th>SS Inc</th><th>Withdrawals</th><th>End Balance</th><th>Goal</th><th>Less Soc</th><th>Shortfall</th><th>PV</th></tr>`;
-    document.querySelector("#projectionTable tbody").innerHTML = model.rows.map((row) => `<tr><td>${row.year}</td><td>${row.age}</td><td>${fmt(row.salary)}</td><td>${fmt(row.beginningBalance)}</td><td>${fmt(row.interest)}</td><td>${fmt(row.savings)}</td><td>${fmt(row.desiredIncome)}</td><td>${fmt(row.ssIncome)}</td><td>${fmt(row.withdrawals)}</td><td>${fmt(row.endingBalance)}</td><td>${fmt(row.goal)}</td><td>${fmt(row.lessSoc)}</td><td>${fmt(row.shortfall)}</td><td>${fmt(row.pv)}</td></tr>`).join("");
+    document.querySelector("#projectionTable thead").innerHTML = `
+      <tr>
+        <th>Year</th>
+        <th>Age</th>
+        <th>Salary</th>
+        <th>Beg Balance</th>
+        <th>Interest</th>
+        <th>Savings</th>
+        <th>Desired Inc</th>
+        <th>SS Inc</th>
+        <th>Withdrawals</th>
+        <th>End Balance</th>
+      </tr>`;
+
+    document.querySelector("#projectionTable tbody").innerHTML = model.rows.map((row) => `
+      <tr>
+        <td>${row.year}</td>
+        <td>${row.age}</td>
+        <td>${fmt(row.salary)}</td>
+        <td>${fmt(row.beginningBalance)}</td>
+        <td>${fmt(row.interest)}</td>
+        <td>${fmt(row.savings)}</td>
+        <td>${fmt(row.desiredIncome)}</td>
+        <td>${fmt(row.ssIncome)}</td>
+        <td>${fmt(row.withdrawals)}</td>
+        <td>${fmt(row.endingBalance)}</td>
+      </tr>`).join("");
   }
 
   function renderChart(model) {
@@ -144,7 +142,6 @@ window.ret02Ui = (() => {
     const input = readInputs();
     const model = window.ret02Model.compute(input);
     renderMessages(model, input);
-    renderMetrics(model);
     renderTable(model);
     renderChart(model);
   }
