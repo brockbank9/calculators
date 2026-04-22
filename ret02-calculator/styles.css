@@ -69,6 +69,43 @@ body {
   overflow-x: auto;
 }
 
+#projectionTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+#projectionTable th {
+  text-align: center;
+  padding: 6px 8px;
+  border-bottom: 2px solid #ddd;
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+  z-index: 1;
+}
+
+#projectionTable td {
+  padding: 4px 8px;
+}
+
+#projectionTable td.money {
+  text-align: right;
+}
+
+#projectionTable td.money.negative {
+  color: #dc2626;
+}
+
+#projectionTable tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+#projectionTable tr.retirement-row {
+  background: #e0f2fe;
+  font-weight: 600;
+}
+
 h1 {
   color: #333;
 }
