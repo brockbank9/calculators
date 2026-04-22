@@ -76,8 +76,17 @@ body {
   font-size: 13px;
 }
 
-#projectionTable th {
+/* Header alignment fix */
+#projectionTable th:nth-child(1),
+#projectionTable th:nth-child(2) {
   text-align: center;
+}
+
+#projectionTable th:nth-child(n+3) {
+  text-align: right;
+}
+
+#projectionTable th {
   padding: 6px 8px;
   border-bottom: 2px solid #ddd;
   position: sticky;
@@ -119,7 +128,6 @@ body {
   font-weight: 600;
 }
 
-/* Freeze first two columns */
 #projectionTable td:nth-child(1),
 #projectionTable th:nth-child(1) {
   position: sticky;
