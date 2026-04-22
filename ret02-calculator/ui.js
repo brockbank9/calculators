@@ -2,6 +2,7 @@ window.ret02Ui = (() => {
   let chartInstance;
   const percentFields = ['inflation', 'desiredPct', 'preReturn', 'postReturn'];
   const currencyFields = ['currentIncome', 'spouseIncome', 'currentSavings'];
+  const scenarioStorageKey = 'ret02_scenarios';
 
   const defaults = {
     currentAge: 45,
@@ -55,6 +56,20 @@ window.ret02Ui = (() => {
       label.appendChild(msg);
     }
     return msg;
+  }
+
+  function applyInputValues(values) {
+    Object.entries(values).forEach(([key, value]) => {
+      const el = document.getElementById(key);
+      if (!el) return;
+      if (percentFields.includes(key)) {
+        el.value = formatPercentDisplay(Number(value));
+      } else if (currencyFields.includes(key)) {
+        el.value = formatCurrencyInput(Number(value));
+      } else {
+        el.value = value;
+      }
+    });
   }
 
   function fillDefaults() {
@@ -334,6 +349,52 @@ window.ret02Ui = (() => {
     doc.save('retirement-analysis-report.pdf');
   }
 
+  function getScenarioStore() {
+    try {
+      return JSON.parse(localStorage.getItem(scenarioStorageKey) || '{}');
+    } catch {
+      return {};
+    }
+  }
+
+  function loadScenarioDropdown() {
+    const select = document.getElementById('scenarioSelect');
+    if (!select) return;
+    const store = getScenarioStore();
+    select.innerHTML = '<option value="">Select a saved scenario</option>' + Object.keys(store).map((name) => `<option value="${name}">${name}</option>`).join('');
+  }
+
+  function saveScenario(name, input) {
+    const trimmed = String(name || '').trim();
+    if (!trimmed) {
+      alert('Enter a scenario name.');
+      return;
+    }
+    const store = getScenarioStore();
+    store[trimmed] = input;
+    localStorage.setItem(scenarioStorageKey, JSON.stringify(store));
+    loadScenarioDropdown();
+    const select = document.getElementById('scenarioSelect');
+    if (select) select.value = trimmed;
+  }
+
+  function loadScenario(name) {
+    const store = getScenarioStore();
+    if (!store[name]) return;
+    applyInputValues(store[name]);
+    clearValidationState();
+    render();
+  }
+
+  function deleteScenario(name) {
+    const store = getScenarioStore();
+    delete store[name];
+    localStorage.setItem(scenarioStorageKey, JSON.stringify(store));
+    loadScenarioDropdown();
+    const select = document.getElementById('scenarioSelect');
+    if (select) select.value = '';
+  }
+
   function bindPercentFormatting() {
     percentFields.forEach((id) => {
       const el = document.getElementById(id);
@@ -376,6 +437,7 @@ window.ret02Ui = (() => {
     bindInlineValidationTargets();
     bindPercentFormatting();
     bindCurrencyFormatting();
+    loadScenarioDropdown();
     render();
 
     document.getElementById('calc-form').addEventListener('submit', (e) => {
@@ -391,6 +453,18 @@ window.ret02Ui = (() => {
     document.getElementById('resetBtn').addEventListener('click', () => {
       fillDefaults();
       render();
+    });
+
+    const saveBtn = document.getElementById('saveScenarioBtn');
+    const loadBtn = document.getElementById('loadScenarioBtn');
+    const deleteBtn = document.getElementById('deleteScenarioBtn');
+
+    if (saveBtn) saveBtn.addEventListener('click', () => saveScenario(document.getElementById('scenarioName').value, readInputs()));
+    if (loadBtn) loadBtn.addEventListener('click', () => loadScenario(document.getElementById('scenarioSelect').value));
+    if (deleteBtn) deleteBtn.addEventListener('click', () => {
+      const selected = document.getElementById('scenarioSelect').value;
+      if (!selected) return;
+      deleteScenario(selected);
     });
 
     const exportBtn = document.getElementById('exportPdfBtn');
