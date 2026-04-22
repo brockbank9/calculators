@@ -89,12 +89,24 @@ body {
   padding: 4px 8px;
 }
 
+#projectionTable td.text-center {
+  text-align: center;
+}
+
 #projectionTable td.money {
   text-align: right;
 }
 
 #projectionTable td.money.negative {
   color: #dc2626;
+}
+
+#projectionTable td.money.positive-withdrawal {
+  color: #dc2626;
+}
+
+#projectionTable td.money.negative-withdrawal {
+  color: #16a34a;
 }
 
 #projectionTable tr:nth-child(even) {
