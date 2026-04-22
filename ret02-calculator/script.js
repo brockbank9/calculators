@@ -1,0 +1,1 @@
+document.getElementById('app').innerHTML = 'Calculator logic goes here (from ret02.xls)';
