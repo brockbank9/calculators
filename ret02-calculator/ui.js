@@ -97,7 +97,7 @@ window.ret02Ui = (() => {
     const ctx = canvas.getContext("2d");
     const dpr = window.devicePixelRatio || 1;
     const width = canvas.clientWidth || 1000;
-    const height = 400;
+    const height = 440;
 
     canvas.width = width * dpr;
     canvas.height = height * dpr;
@@ -106,30 +106,50 @@ window.ret02Ui = (() => {
 
     ctx.font = "16px Arial";
     ctx.fillStyle = "#111";
-    ctx.fillText("Retirement Analysis", width / 2 - 80, 20);
+    ctx.textAlign = "center";
+    ctx.fillText("Retirement Analysis", width / 2, 22);
 
-    const pad = { top: 50, right: 20, bottom: 60, left: 60 };
+    const pad = { top: 60, right: 24, bottom: 78, left: 96 };
     const plotW = width - pad.left - pad.right;
     const plotH = height - pad.top - pad.bottom;
 
     const series = [
       { values: model.rows.map(r => r.endingBalance), color: "#111827", label: "End Balance" },
       { values: model.rows.map(r => r.desiredIncome), color: "#4f46e5", label: "Desired Income" },
-      { values: model.rows.map(r => r.ssIncome), color: "#059669", label: "SS Income" }
+      { values: model.rows.map(r => r.ssIncome), color: "#059669", label: "Social Security Income" }
     ];
 
     const maxVal = Math.max(...series.flatMap(s => s.values), 1);
+    const yTicks = 5;
 
-    ctx.strokeStyle = "#e5e7eb";
-    for (let i = 0; i <= 4; i++) {
-      const y = pad.top + (plotH / 4) * i;
+    // grid + y-axis labels
+    ctx.font = "12px Arial";
+    ctx.textAlign = "right";
+    for (let i = 0; i <= yTicks; i += 1) {
+      const ratio = i / yTicks;
+      const y = pad.top + plotH - plotH * ratio;
+      const tickValue = maxVal * ratio;
+
+      ctx.strokeStyle = "#e5e7eb";
       ctx.beginPath();
       ctx.moveTo(pad.left, y);
       ctx.lineTo(width - pad.right, y);
       ctx.stroke();
+
+      ctx.fillStyle = "#4b5563";
+      ctx.fillText(currency.format(tickValue), pad.left - 10, y + 4);
     }
 
-    series.forEach(s => {
+    // axes
+    ctx.strokeStyle = "#9ca3af";
+    ctx.beginPath();
+    ctx.moveTo(pad.left, pad.top);
+    ctx.lineTo(pad.left, pad.top + plotH);
+    ctx.lineTo(width - pad.right, pad.top + plotH);
+    ctx.stroke();
+
+    // lines
+    series.forEach((s) => {
       ctx.strokeStyle = s.color;
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -142,16 +162,67 @@ window.ret02Ui = (() => {
       ctx.stroke();
     });
 
-    ctx.fillStyle = "#333";
-    ctx.font = "12px Arial";
-    ctx.fillText("Age", width / 2 - 15, height - 10);
+    // x-axis ticks from client age column
+    const desiredTicks = Math.min(12, model.rows.length);
+    const step = Math.max(1, Math.ceil(model.rows.length / desiredTicks));
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#4b5563";
+    ctx.font = "11px Arial";
+    for (let i = 0; i < model.rows.length; i += step) {
+      const row = model.rows[i];
+      const x = pad.left + (plotW * i) / Math.max(model.rows.length - 1, 1);
+      const axisY = pad.top + plotH;
 
+      ctx.strokeStyle = "#9ca3af";
+      ctx.beginPath();
+      ctx.moveTo(x, axisY);
+      ctx.lineTo(x, axisY + 6);
+      ctx.stroke();
+
+      ctx.fillText(String(row.age), x, axisY + 20);
+    }
+
+    // ensure last age label is shown
+    if (model.rows.length > 1) {
+      const lastIndex = model.rows.length - 1;
+      const lastRow = model.rows[lastIndex];
+      const x = pad.left + plotW;
+      const axisY = pad.top + plotH;
+      ctx.strokeStyle = "#9ca3af";
+      ctx.beginPath();
+      ctx.moveTo(x, axisY);
+      ctx.lineTo(x, axisY + 6);
+      ctx.stroke();
+      ctx.fillText(String(lastRow.age), x, axisY + 20);
+    }
+
+    // x-axis label
+    ctx.font = "12px Arial";
+    ctx.fillStyle = "#111";
+    ctx.fillText("Age", pad.left + plotW / 2, height - 16);
+
+    // y-axis label
+    ctx.save();
+    ctx.translate(22, pad.top + plotH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#111";
+    ctx.font = "12px Arial";
+    ctx.fillText("Dollar Value", 0, 0);
+    ctx.restore();
+
+    // legend
+    ctx.textAlign = "left";
+    ctx.font = "12px Arial";
+    const legendY = 38;
+    const legendSpacing = 180;
+    const legendStartX = pad.left;
     series.forEach((s, i) => {
-      const x = pad.left + i * 150;
+      const x = legendStartX + i * legendSpacing;
       ctx.fillStyle = s.color;
-      ctx.fillRect(x, 30, 12, 12);
+      ctx.fillRect(x, legendY - 10, 12, 12);
       ctx.fillStyle = "#333";
-      ctx.fillText(s.label, x + 18, 40);
+      ctx.fillText(s.label, x + 18, legendY);
     });
   }
 
