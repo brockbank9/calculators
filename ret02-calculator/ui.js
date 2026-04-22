@@ -124,8 +124,8 @@ window.ret02Ui = (() => {
             borderWidth: 0,
             grouped: false,
             order: 2,
-            categoryPercentage: 0.55,
-            barPercentage: 0.55
+            categoryPercentage: 0.9,
+            barPercentage: 0.9
           },
           {
             type: 'line',
