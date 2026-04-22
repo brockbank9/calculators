@@ -1,6 +1,7 @@
 window.ret02Ui = (() => {
   let chartInstance;
   const percentFields = ['inflation', 'desiredPct', 'preReturn', 'postReturn'];
+  const currencyFields = ['currentIncome', 'spouseIncome', 'currentSavings'];
 
   const defaults = {
     currentAge: 45,
@@ -31,12 +32,25 @@ window.ret02Ui = (() => {
     return Number.isFinite(num) ? num / 100 : 0;
   }
 
+  function formatCurrencyInput(value) {
+    if (!Number.isFinite(Number(value))) return '$0';
+    return currency.format(Number(value));
+  }
+
+  function parseCurrencyInput(value) {
+    const cleaned = String(value ?? '').replace(/[$,\s]/g, '');
+    const num = Number(cleaned);
+    return Number.isFinite(num) ? num : 0;
+  }
+
   function fillDefaults() {
     Object.entries(defaults).forEach(([key, value]) => {
       const el = document.getElementById(key);
       if (!el) return;
       if (percentFields.includes(key)) {
         el.value = formatPercentDisplay(value);
+      } else if (currencyFields.includes(key)) {
+        el.value = formatCurrencyInput(value);
       } else {
         el.value = value;
       }
@@ -46,9 +60,9 @@ window.ret02Ui = (() => {
   function readInputs() {
     return {
       currentAge: Number(document.getElementById('currentAge').value),
-      spouseIncome: Number(document.getElementById('spouseIncome').value),
-      currentIncome: Number(document.getElementById('currentIncome').value),
-      currentSavings: Number(document.getElementById('currentSavings').value),
+      spouseIncome: parseCurrencyInput(document.getElementById('spouseIncome').value),
+      currentIncome: parseCurrencyInput(document.getElementById('currentIncome').value),
+      currentSavings: parseCurrencyInput(document.getElementById('currentSavings').value),
       inflation: parsePercentInput(document.getElementById('inflation').value),
       retireAge: Number(document.getElementById('retireAge').value),
       retireYears: Number(document.getElementById('retireYears').value),
@@ -181,18 +195,11 @@ window.ret02Ui = (() => {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        interaction: {
-          mode: 'index',
-          intersect: false
-        },
+        interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { position: 'bottom' },
           title: { display: true, text: 'Retirement Analysis' },
-          tooltip: {
-            callbacks: {
-              label: (context) => `${context.dataset.label}: ${currency.format(context.raw)}`
-            }
-          }
+          tooltip: { callbacks: { label: (context) => `${context.dataset.label}: ${currency.format(context.raw)}` } }
         },
         scales: {
           x: {
@@ -238,7 +245,6 @@ window.ret02Ui = (() => {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'letter');
     const input = readInputs();
-    const model = window.ret02Model.compute(input);
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 14;
@@ -335,14 +341,25 @@ window.ret02Ui = (() => {
     percentFields.forEach((id) => {
       const el = document.getElementById(id);
       if (!el) return;
-
       el.addEventListener('focus', () => {
         el.value = el.value.replace('%', '');
       });
-
       el.addEventListener('blur', () => {
         const val = parsePercentInput(el.value || 0);
         el.value = formatPercentDisplay(val);
+      });
+    });
+  }
+
+  function bindCurrencyFormatting() {
+    currencyFields.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('focus', () => {
+        el.value = String(parseCurrencyInput(el.value));
+      });
+      el.addEventListener('blur', () => {
+        el.value = formatCurrencyInput(parseCurrencyInput(el.value));
       });
     });
   }
@@ -358,6 +375,7 @@ window.ret02Ui = (() => {
   function init() {
     fillDefaults();
     bindPercentFormatting();
+    bindCurrencyFormatting();
     render();
 
     document.querySelectorAll('#calc-form input, #calc-form select').forEach((el) => {
