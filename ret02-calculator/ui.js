@@ -55,6 +55,7 @@ window.ret02Ui = (() => {
         el.value = value;
       }
     });
+    clearValidationState();
   }
 
   function readInputs() {
@@ -72,6 +73,78 @@ window.ret02Ui = (() => {
       includeSS: document.getElementById('includeSS').value.trim().toUpperCase(),
       marital: document.getElementById('marital').value.trim().toUpperCase()
     };
+  }
+
+  function getValidationBox() {
+    let box = document.getElementById('validationSummary');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'validationSummary';
+      box.className = 'validation-summary';
+      const form = document.getElementById('calc-form');
+      const actions = form.querySelector('.actions');
+      form.insertBefore(box, actions);
+    }
+    return box;
+  }
+
+  function clearValidationState() {
+    document.querySelectorAll('#calc-form .input-error').forEach((el) => el.classList.remove('input-error'));
+    const box = document.getElementById('validationSummary');
+    if (box) {
+      box.innerHTML = '';
+      box.style.display = 'none';
+    }
+  }
+
+  function setFieldError(fieldId) {
+    const el = document.getElementById(fieldId);
+    if (el) el.classList.add('input-error');
+  }
+
+  function validateInputs(input) {
+    const errors = [];
+    const pushError = (fieldId, message) => {
+      errors.push(message);
+      setFieldError(fieldId);
+    };
+
+    if (!Number.isFinite(input.currentAge) || input.currentAge < 18 || input.currentAge > 90) {
+      pushError('currentAge', 'Current age must be between 18 and 90.');
+    }
+    if (!Number.isFinite(input.retireAge) || input.retireAge <= input.currentAge || input.retireAge > 100) {
+      pushError('retireAge', 'Desired retirement age must be greater than current age and no more than 100.');
+    }
+    if (!Number.isFinite(input.retireYears) || input.retireYears < 1 || input.retireYears > 50) {
+      pushError('retireYears', 'Years of retirement income must be between 1 and 50.');
+    }
+    if (input.currentIncome < 0) pushError('currentIncome', 'Current gross annual income cannot be negative.');
+    if (input.spouseIncome < 0) pushError('spouseIncome', 'Spouse annual income cannot be negative.');
+    if (input.currentSavings < 0) pushError('currentSavings', 'Current retirement savings cannot be negative.');
+
+    if (input.inflation < 0 || input.inflation > 0.15) {
+      pushError('inflation', 'Inflation / salary increase must be between 0% and 15%.');
+    }
+    if (input.desiredPct < 0 || input.desiredPct > 1.5) {
+      pushError('desiredPct', 'Income desired at retirement must be between 0% and 150%.');
+    }
+    if (input.preReturn < 0 || input.preReturn > 0.2) {
+      pushError('preReturn', 'Pre-retirement return must be between 0% and 20%.');
+    }
+    if (input.postReturn < 0 || input.postReturn > 0.2) {
+      pushError('postReturn', 'Post-retirement return must be between 0% and 20%.');
+    }
+
+    const box = getValidationBox();
+    if (errors.length) {
+      box.innerHTML = `<strong>Please review:</strong><ul>${errors.map((e) => `<li>${e}</li>`).join('')}</ul>`;
+      box.style.display = 'block';
+    } else {
+      box.innerHTML = '';
+      box.style.display = 'none';
+    }
+
+    return errors.length === 0;
   }
 
   function fmtCurrency(value, showSymbol = false) {
@@ -96,6 +169,18 @@ window.ret02Ui = (() => {
     document.getElementById('primaryMessage').textContent = ResultsParagraph1;
     document.getElementById('waitMessage').textContent = ResultsParagraph2;
     document.getElementById('metrics').innerHTML = '';
+  }
+
+  function clearOutputs() {
+    document.getElementById('primaryMessage').textContent = '';
+    document.getElementById('waitMessage').textContent = '';
+    document.getElementById('metrics').innerHTML = '';
+    document.querySelector('#projectionTable thead').innerHTML = '';
+    document.querySelector('#projectionTable tbody').innerHTML = '';
+    if (chartInstance) {
+      chartInstance.destroy();
+      chartInstance = null;
+    }
   }
 
   function moneyCell(value, showSymbol, extraClass = '') {
@@ -365,7 +450,12 @@ window.ret02Ui = (() => {
   }
 
   function render() {
+    clearValidationState();
     const input = readInputs();
+    if (!validateInputs(input)) {
+      clearOutputs();
+      return;
+    }
     const model = window.ret02Model.compute(input);
     renderMessages(model, input);
     renderTable(model, input);
