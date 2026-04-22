@@ -42,20 +42,54 @@ window.ret02Ui = (() => {
     };
   }
 
+  function fmtCurrency(value) {
+    return currency.format(value);
+  }
+
   function renderMessages(model, input) {
     const ageMessage = Math.round(input.currentAge + model.yearsUntilRetirement + model.yearsOfRetirement);
 
     const ResultsParagraph1 = model.currentSavePct < 0
-      ? `Congratulations!!! It appears that you have saved enough to meet your goal. At age ${ageMessage} you will still have ${currency.format(model.finalRow.endingBalance)}.`
-      : `You need to save ${percent1.format(model.currentSavePct)} of your income. That equals ${currency.format(model.currentAnnualSave)} this year.`;
+      ? `Congratulations!!! It appears that you have saved enough to meet your goal. In fact, it appears that at age ${ageMessage} you will still have ${currency.format(model.finalRow.endingBalance)} in your retirement accounts.`
+      : `To provide the inflation-adjusted retirement income you desire, you will need to save ${percent1.format(model.currentSavePct)} of your yearly income (less any employer match, if applicable). This year, for example, the amount would be ${currency.format(model.currentAnnualSave)} or ${currency.format(model.currentAnnualSave / 12)} a month.`;
 
     const ResultsParagraph2 = model.yearsUntilRetirement < 2 || model.currentSavePct < 0 || model.waitSavePct === 0
       ? ""
-      : `Waiting one year increases savings to ${percent1.format(model.waitSavePct)} (${currency.format(model.waitAnnualSave)}).`;
+      : `If you wait just one year to start saving for retirement you will need to save ${percent1.format(model.waitSavePct)} of your annual income, which amounts to ${currency.format(model.waitAnnualSave)} in the first year. Save Now and Save Less!!!`;
 
     document.getElementById("primaryMessage").textContent = ResultsParagraph1;
     document.getElementById("waitMessage").textContent = ResultsParagraph2;
     document.getElementById("metrics").innerHTML = "";
+  }
+
+  function renderTable(model) {
+    document.querySelector("#projectionTable thead").innerHTML = `
+      <tr>
+        <th>Year</th>
+        <th>Age</th>
+        <th>Salary</th>
+        <th>Beg Balance</th>
+        <th>Interest</th>
+        <th>Savings</th>
+        <th>Desired Inc</th>
+        <th>SS Inc</th>
+        <th>Withdrawals</th>
+        <th>End Balance</th>
+      </tr>`;
+
+    document.querySelector("#projectionTable tbody").innerHTML = model.rows.map((row) => `
+      <tr>
+        <td>${row.year}</td>
+        <td>${row.age}</td>
+        <td>${fmtCurrency(row.salary)}</td>
+        <td>${fmtCurrency(row.beginningBalance)}</td>
+        <td>${fmtCurrency(row.interest)}</td>
+        <td>${fmtCurrency(row.savings)}</td>
+        <td>${fmtCurrency(row.desiredIncome)}</td>
+        <td>${fmtCurrency(row.ssIncome)}</td>
+        <td>${fmtCurrency(row.withdrawals)}</td>
+        <td>${fmtCurrency(row.endingBalance)}</td>
+      </tr>`).join("");
   }
 
   function renderChart(model) {
@@ -152,6 +186,7 @@ window.ret02Ui = (() => {
     const input = readInputs();
     const model = window.ret02Model.compute(input);
     renderMessages(model, input);
+    renderTable(model);
     renderChart(model);
   }
 
