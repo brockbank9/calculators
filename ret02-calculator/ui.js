@@ -104,7 +104,6 @@ window.ret02Ui = (() => {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, width, height);
 
-    // Title
     ctx.font = "16px Arial";
     ctx.fillStyle = "#111";
     ctx.fillText("Retirement Analysis", width / 2 - 80, 20);
@@ -143,12 +142,10 @@ window.ret02Ui = (() => {
       ctx.stroke();
     });
 
-    // X-axis label
     ctx.fillStyle = "#333";
     ctx.font = "12px Arial";
     ctx.fillText("Age", width / 2 - 15, height - 10);
 
-    // Legend
     series.forEach((s, i) => {
       const x = pad.left + i * 150;
       ctx.fillStyle = s.color;
@@ -166,9 +163,18 @@ window.ret02Ui = (() => {
     renderChart(model);
   }
 
+  function bindAutoRecalculate() {
+    const fields = document.querySelectorAll("#calc-form input, #calc-form select");
+    fields.forEach((field) => {
+      field.addEventListener("blur", render);
+      field.addEventListener("change", render);
+    });
+  }
+
   function init() {
     fillDefaults();
     render();
+    bindAutoRecalculate();
     document.getElementById("calc-form").addEventListener("submit", (event) => { event.preventDefault(); render(); });
     document.getElementById("resetBtn").addEventListener("click", () => { fillDefaults(); render(); });
     window.addEventListener("resize", render);
