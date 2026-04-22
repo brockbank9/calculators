@@ -206,6 +206,23 @@ window.ret02Ui = (() => {
     return y + (lines.length * lineHeight);
   }
 
+  function buildInputRows(input) {
+    return [
+      ['Current age', String(input.currentAge)],
+      ['Spouse annual income', currency.format(input.spouseIncome)],
+      ['Current gross annual income', currency.format(input.currentIncome)],
+      ['Current retirement savings', currency.format(input.currentSavings)],
+      ['Inflation / salary increase', percent1.format(input.inflation)],
+      ['Desired retirement age', String(input.retireAge)],
+      ['Years of retirement income', String(input.retireYears)],
+      ['Income desired at retirement', percent1.format(input.desiredPct)],
+      ['Pre-retirement return', percent1.format(input.preReturn)],
+      ['Post-retirement return', percent1.format(input.postReturn)],
+      ['Include Social Security', input.includeSS],
+      ['Single or married', input.marital]
+    ];
+  }
+
   function exportPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'letter');
@@ -232,43 +249,33 @@ window.ret02Ui = (() => {
 
     const results1 = document.getElementById('primaryMessage').textContent || '';
     const results2 = document.getElementById('waitMessage').textContent || '';
-    y = addWrappedText(doc, results1, margin, y, pageWidth - margin * 2);
+    y = addWrappedText(doc, results1, margin, y, pageWidth - margin * 2, 5);
     y += 2;
     if (results2.trim()) {
-      y = addWrappedText(doc, results2, margin, y, pageWidth - margin * 2);
+      y = addWrappedText(doc, results2, margin, y, pageWidth - margin * 2, 5);
       y += 2;
     }
 
+    const inputRows = buildInputRows(input);
     doc.setFontSize(12);
     doc.text('Inputs', margin, y + 4);
-    y += 10;
 
-    const inputRows = [
-      ['Current age', String(input.currentAge)],
-      ['Spouse annual income', currency.format(input.spouseIncome)],
-      ['Current gross annual income', currency.format(input.currentIncome)],
-      ['Current retirement savings', currency.format(input.currentSavings)],
-      ['Inflation / salary increase', percent1.format(input.inflation)],
-      ['Desired retirement age', String(input.retireAge)],
-      ['Years of retirement income', String(input.retireYears)],
-      ['Income desired at retirement', percent1.format(input.desiredPct)],
-      ['Pre-retirement return', percent1.format(input.preReturn)],
-      ['Post-retirement return', percent1.format(input.postReturn)],
-      ['Include Social Security', input.includeSS],
-      ['Single or married', input.marital]
-    ];
-
-    const leftX = margin;
-    const rightX = pageWidth / 2 + 4;
-    inputRows.forEach((row, index) => {
-      const colX = index < 6 ? leftX : rightX;
-      const rowY = y + ((index % 6) * 6);
-      doc.setFont(undefined, 'bold');
-      doc.text(`${row[0]}:`, colX, rowY);
-      doc.setFont(undefined, 'normal');
-      doc.text(String(row[1]), colX + 38, rowY);
+    doc.autoTable({
+      startY: y + 6,
+      body: inputRows,
+      theme: 'grid',
+      styles: { fontSize: 8, cellPadding: 1.6, overflow: 'linebreak' },
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 42 },
+        1: { cellWidth: 38 },
+        2: { fontStyle: 'bold', cellWidth: 42 },
+        3: { cellWidth: 38 }
+      },
+      body: inputRows.slice(0, 6).map((row, idx) => [row[0], row[1], inputRows[idx + 6][0], inputRows[idx + 6][1]]),
+      margin: { left: margin, right: margin }
     });
-    y += 40;
+
+    y = doc.lastAutoTable.finalY + 6;
 
     const canvas = document.getElementById('projectionChart');
     const chartImage = canvas.toDataURL('image/png', 1.0);
@@ -284,7 +291,6 @@ window.ret02Ui = (() => {
     doc.text('Chart', margin, y);
     y += 4;
     doc.addImage(chartImage, 'PNG', margin, y, chartWidth, chartHeight);
-    y += chartHeight + 8;
 
     doc.addPage();
     doc.setFontSize(12);
@@ -293,11 +299,23 @@ window.ret02Ui = (() => {
     doc.autoTable({
       html: '#projectionTable',
       startY: margin + 4,
-      styles: { fontSize: 7, cellPadding: 1.5 },
-      headStyles: { fillColor: [255, 255, 255], textColor: 0, lineWidth: 0.2 },
+      styles: { fontSize: 7, cellPadding: 1.5, halign: 'right' },
+      headStyles: { fillColor: [255, 255, 255], textColor: 0, lineWidth: 0.2, halign: 'center' },
       alternateRowStyles: { fillColor: [249, 250, 251] },
       margin: { left: margin, right: margin },
-      theme: 'grid'
+      theme: 'grid',
+      columnStyles: {
+        0: { halign: 'center' },
+        1: { halign: 'center' },
+        2: { halign: 'right' },
+        3: { halign: 'right' },
+        4: { halign: 'right' },
+        5: { halign: 'right' },
+        6: { halign: 'right' },
+        7: { halign: 'right' },
+        8: { halign: 'right' },
+        9: { halign: 'right' }
+      }
     });
 
     doc.save('retirement-analysis-report.pdf');
