@@ -57,7 +57,10 @@
         </section>
 
         <section class="panel table-panel">
-          <h2>Projection</h2>
+          <div class="panel-header">
+            <h2>Projection</h2>
+            <button type="button" id="exportPdfBtn" class="secondary">Export PDF</button>
+          </div>
           <div class="table-wrap">
             <table id="projectionTable"><thead></thead><tbody></tbody></table>
           </div>
@@ -67,6 +70,8 @@
 
   </main>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
   <script src="formulas.js"></script>
   <script src="ui.js"></script>
   <script src="app.js"></script>
