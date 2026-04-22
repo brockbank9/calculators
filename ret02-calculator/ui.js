@@ -107,13 +107,13 @@ window.ret02Ui = (() => {
             type: 'bar',
             label: 'Desired Income',
             data: model.rows.map((r) => r.desiredIncome),
-            backgroundColor: '#4f46e5',
+            backgroundColor: 'rgba(79, 70, 229, 0.5)',
             borderColor: '#4f46e5',
-            borderWidth: 0,
-            stack: 'income',
-            order: 2,
+            borderWidth: 1,
+            grouped: false,
+            order: 3,
             categoryPercentage: 0.9,
-            barPercentage: 0.95
+            barPercentage: 0.9
           },
           {
             type: 'bar',
@@ -122,10 +122,10 @@ window.ret02Ui = (() => {
             backgroundColor: '#059669',
             borderColor: '#059669',
             borderWidth: 0,
-            stack: 'income',
+            grouped: false,
             order: 2,
-            categoryPercentage: 0.9,
-            barPercentage: 0.95
+            categoryPercentage: 0.55,
+            barPercentage: 0.55
           },
           {
             type: 'line',
@@ -160,7 +160,7 @@ window.ret02Ui = (() => {
         },
         scales: {
           x: {
-            stacked: true,
+            stacked: false,
             title: { display: true, text: 'Age' },
             ticks: {
               autoSkip: true,
@@ -171,7 +171,7 @@ window.ret02Ui = (() => {
             }
           },
           y: {
-            stacked: true,
+            stacked: false,
             beginAtZero: true,
             ticks: {
               callback: (value) => currency.format(value)
