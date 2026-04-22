@@ -60,52 +60,88 @@ window.ret02Ui = (() => {
 
   function renderChart(model) {
     const ctx = document.getElementById("projectionChart").getContext("2d");
-
-    const labels = model.rows.map(r => r.age);
+    const labels = model.rows.map((r) => r.age);
 
     if (chartInstance) chartInstance.destroy();
 
     chartInstance = new Chart(ctx, {
+      type: 'bar',
       data: {
         labels,
         datasets: [
           {
             type: 'bar',
             label: 'Desired Income',
-            data: model.rows.map(r => r.desiredIncome),
+            data: model.rows.map((r) => r.desiredIncome),
             backgroundColor: '#4f46e5',
-            stack: 'income'
+            borderColor: '#4f46e5',
+            borderWidth: 0,
+            stack: 'income',
+            order: 2,
+            categoryPercentage: 0.9,
+            barPercentage: 0.95
           },
           {
             type: 'bar',
             label: 'Social Security Income',
-            data: model.rows.map(r => r.ssIncome),
+            data: model.rows.map((r) => r.ssIncome),
             backgroundColor: '#059669',
-            stack: 'income'
+            borderColor: '#059669',
+            borderWidth: 0,
+            stack: 'income',
+            order: 2,
+            categoryPercentage: 0.9,
+            barPercentage: 0.95
           },
           {
             type: 'line',
             label: 'Ending Balance',
-            data: model.rows.map(r => r.endingBalance),
+            data: model.rows.map((r) => r.endingBalance),
             borderColor: '#111827',
+            backgroundColor: '#111827',
             borderWidth: 2,
             tension: 0.3,
-            pointRadius: 0
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            fill: false,
+            order: 1
           }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
         plugins: {
           legend: { position: 'bottom' },
-          title: { display: true, text: 'Retirement Analysis' }
+          title: { display: true, text: 'Retirement Analysis' },
+          tooltip: {
+            callbacks: {
+              label: (context) => `${context.dataset.label}: ${currency.format(context.raw)}`
+            }
+          }
         },
         scales: {
-          x: { title: { display: true, text: 'Age' } },
+          x: {
+            stacked: true,
+            title: { display: true, text: 'Age' },
+            ticks: {
+              autoSkip: true,
+              maxTicksLimit: 12
+            },
+            grid: {
+              display: false
+            }
+          },
           y: {
             stacked: true,
-            ticks: { callback: v => '$' + v.toLocaleString() }
+            beginAtZero: true,
+            ticks: {
+              callback: (value) => currency.format(value)
+            }
           }
         }
       }
@@ -120,7 +156,7 @@ window.ret02Ui = (() => {
   }
 
   function bindAutoRecalculate() {
-    document.querySelectorAll("#calc-form input, #calc-form select").forEach(el => {
+    document.querySelectorAll("#calc-form input, #calc-form select").forEach((el) => {
       el.addEventListener("blur", render);
       el.addEventListener("change", render);
     });
@@ -130,7 +166,10 @@ window.ret02Ui = (() => {
     fillDefaults();
     render();
     bindAutoRecalculate();
-    document.getElementById("resetBtn").addEventListener("click", () => { fillDefaults(); render(); });
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      fillDefaults();
+      render();
+    });
   }
 
   return { init };
