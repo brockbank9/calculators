@@ -43,6 +43,25 @@ body {
   font-size: 14px;
 }
 
+.input-error {
+  border: 1px solid #dc2626 !important;
+  background: #fff7f7;
+}
+
+.validation-summary {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.validation-summary ul {
+  margin: 4px 0 0 16px;
+}
+
 .actions {
   margin-top: 12px;
   display: flex;
@@ -76,7 +95,6 @@ body {
   font-size: 13px;
 }
 
-/* Header alignment fix */
 #projectionTable th:nth-child(1),
 #projectionTable th:nth-child(2) {
   text-align: center;
