@@ -1,12 +1,67 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Retirement Calculator</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RET02 Retirement Income Planning Calculator</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Retirement Calculator</h1>
-  <div id="app"></div>
+  <main class="page">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">RET02 workbook rebuild</p>
+        <h1>Retirement Income Planning Calculator</h1>
+        <p class="subhead">Matches the formulas in ret02.xls including Social Security and full projection tables.</p>
+      </div>
+    </header>
+
+    <section class="grid">
+      <form id="calc-form" class="panel inputs">
+        <h2>Inputs</h2>
+        <div class="input-grid">
+          <label><span>Current age</span><input id="currentAge" type="number"></label>
+          <label><span>Spouse annual income</span><input id="spouseIncome" type="number"></label>
+          <label><span>Current gross annual income</span><input id="currentIncome" type="number"></label>
+          <label><span>Current retirement savings</span><input id="currentSavings" type="number"></label>
+          <label><span>Inflation / salary increase</span><input id="inflation" type="number" step="0.0001"></label>
+          <label><span>Desired retirement age</span><input id="retireAge" type="number"></label>
+          <label><span>Years of retirement income</span><input id="retireYears" type="number"></label>
+          <label><span>Income desired at retirement</span><input id="desiredPct" type="number" step="0.0001"></label>
+          <label><span>Pre-retirement return</span><input id="preReturn" type="number" step="0.0001"></label>
+          <label><span>Post-retirement return</span><input id="postReturn" type="number" step="0.0001"></label>
+          <label><span>Include Social Security</span><select id="includeSS"><option>Y</option><option>N</option></select></label>
+          <label><span>Single or married</span><select id="marital"><option>M</option><option>S</option></select></label>
+        </div>
+        <div class="actions">
+          <button type="submit">Recalculate</button>
+          <button type="button" id="resetBtn" class="secondary">Reset</button>
+        </div>
+      </form>
+
+      <section class="panel summary">
+        <h2>Results</h2>
+        <div id="primaryMessage" class="message"></div>
+        <div id="waitMessage" class="message subtle"></div>
+        <div class="metrics" id="metrics"></div>
+      </section>
+    </section>
+
+    <section class="panel">
+      <h2>Projection</h2>
+      <canvas id="projectionChart" height="140"></canvas>
+      <div class="table-wrap">
+        <table id="projectionTable"><thead></thead><tbody></tbody></table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Workbook logic audit</h2>
+      <div class="metrics audit" id="auditMetrics"></div>
+    </section>
+  </main>
+  <script src="formulas.js"></script>
+  <script src="ui.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
