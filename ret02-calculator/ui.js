@@ -1,88 +1,87 @@
-// --- appended features ---
+// RESTORED UI WITH WARNINGS + SCENARIOS (clean integration)
 
-function renderSoftWarnings(input) {
-  const warnings = [];
+window.ret02Ui = (() => {
+  let chartInstance;
+  const percentFields = ['inflation', 'desiredPct', 'preReturn', 'postReturn'];
+  const currencyFields = ['currentIncome', 'spouseIncome', 'currentSavings'];
 
-  if (input.preReturn > 0.08) warnings.push('Pre-retirement return above 8% is aggressive.');
-  if (input.postReturn > 0.06) warnings.push('Post-retirement return above 6% is aggressive.');
-  if (input.inflation > 0.05) warnings.push('Inflation above 5% is higher than typical.');
-  if (input.desiredPct > 1) warnings.push('Desired income over 100% is unusually high.');
+  const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 
-  const box = document.getElementById('softWarnings');
-  if (!box) return;
+  function parsePercentInput(v){return Number(String(v).replace('%',''))/100||0}
+  function parseCurrencyInput(v){return Number(String(v).replace(/[$,]/g,''))||0}
 
-  if (warnings.length) {
-    box.innerHTML = warnings.map(w => `<div>⚠ ${w}</div>`).join('');
-    box.style.display = 'block';
-  } else {
-    box.style.display = 'none';
+  function readInputs(){
+    return {
+      currentAge:+currentAge.value,
+      spouseIncome:parseCurrencyInput(spouseIncome.value),
+      currentIncome:parseCurrencyInput(currentIncome.value),
+      currentSavings:parseCurrencyInput(currentSavings.value),
+      inflation:parsePercentInput(inflation.value),
+      retireAge:+retireAge.value,
+      retireYears:+retireYears.value,
+      desiredPct:parsePercentInput(desiredPct.value),
+      preReturn:parsePercentInput(preReturn.value),
+      postReturn:parsePercentInput(postReturn.value),
+      includeSS:includeSS.value,
+      marital:marital.value
+    }
   }
-}
 
-function getScenarioStore() {
-  return JSON.parse(localStorage.getItem('ret02_scenarios') || '{}');
-}
+  function renderSoftWarnings(input){
+    const w=[];
+    if(input.preReturn>0.08) w.push('Pre-return above 8% is aggressive');
+    if(input.postReturn>0.06) w.push('Post-return above 6% is aggressive');
+    if(input.inflation>0.05) w.push('Inflation above 5% is high');
+    const box=document.getElementById('softWarnings');
+    if(!box) return;
+    box.innerHTML=w.map(x=>`⚠ ${x}`).join('<br>');
+    box.style.display=w.length?'block':'none';
+  }
 
-function saveScenario(name, input) {
-  if (!name) return alert('Enter a scenario name');
-  const store = getScenarioStore();
-  store[name] = input;
-  localStorage.setItem('ret02_scenarios', JSON.stringify(store));
-  loadScenarioDropdown();
-}
+  function render(){
+    const input=readInputs();
+    renderSoftWarnings(input);
+    const model=window.ret02Model.compute(input);
 
-function loadScenario(name) {
-  const store = getScenarioStore();
-  const data = store[name];
-  if (!data) return;
+    primaryMessage.textContent='';
+    waitMessage.textContent='';
 
-  Object.entries(data).forEach(([key, val]) => {
-    const el = document.getElementById(key);
-    if (!el) return;
-    el.value = val;
-  });
-}
+    renderChart(model);
+  }
 
-function deleteScenario(name) {
-  const store = getScenarioStore();
-  delete store[name];
-  localStorage.setItem('ret02_scenarios', JSON.stringify(store));
-  loadScenarioDropdown();
-}
+  function renderChart(model){
+    const ctx=projectionChart.getContext('2d');
+    if(chartInstance) chartInstance.destroy();
+    chartInstance=new Chart(ctx,{type:'line',data:{labels:model.rows.map(r=>r.age),datasets:[{label:'Ending Balance',data:model.rows.map(r=>r.endingBalance)}]}});
+  }
 
-function loadScenarioDropdown() {
-  const select = document.getElementById('scenarioSelect');
-  if (!select) return;
+  function getStore(){return JSON.parse(localStorage.getItem('ret02_scenarios')||'{}')}
 
-  const store = getScenarioStore();
-  select.innerHTML = '<option value="">Select a saved scenario</option>' +
-    Object.keys(store).map(k => `<option value="${k}">${k}</option>`).join('');
-}
+  function saveScenario(name,input){
+    const s=getStore();s[name]=input;
+    localStorage.setItem('ret02_scenarios',JSON.stringify(s));
+    loadDropdown();
+  }
 
-// hook into existing init and render
-const _origInit = window.ret02Ui.init;
-window.ret02Ui.init = function() {
-  _origInit();
+  function loadDropdown(){
+    const s=getStore();
+    scenarioSelect.innerHTML='<option></option>'+Object.keys(s).map(k=>`<option>${k}</option>`).join('');
+  }
 
-  loadScenarioDropdown();
+  function init(){
+    loadDropdown();
 
-  document.getElementById('saveScenarioBtn').onclick = () => {
-    saveScenario(document.getElementById('scenarioName').value, readInputs());
-  };
+    saveScenarioBtn.onclick=()=>saveScenario(scenarioName.value,readInputs());
+    loadScenarioBtn.onclick=()=>{const s=getStore()[scenarioSelect.value];if(!s)return;Object.entries(s).forEach(([k,v])=>{document.getElementById(k).value=v});render()}
+    deleteScenarioBtn.onclick=()=>{const s=getStore();delete s[scenarioSelect.value];localStorage.setItem('ret02_scenarios',JSON.stringify(s));loadDropdown()}
 
-  document.getElementById('loadScenarioBtn').onclick = () => {
-    loadScenario(document.getElementById('scenarioSelect').value);
-    window.ret02Ui.init();
-  };
+    document.querySelectorAll('input,select').forEach(el=>{
+      el.addEventListener('change',render);
+      el.addEventListener('blur',render);
+    });
 
-  document.getElementById('deleteScenarioBtn').onclick = () => {
-    deleteScenario(document.getElementById('scenarioSelect').value);
-  };
-};
+    render();
+  }
 
-const _origRender = render;
-render = function() {
-  const input = readInputs();
-  renderSoftWarnings(input);
-  _origRender();
-};
+  return {init};
+})();
