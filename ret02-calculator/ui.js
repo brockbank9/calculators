@@ -96,8 +96,8 @@ window.ret02Ui = (() => {
     const canvas = document.getElementById("projectionChart");
     const ctx = canvas.getContext("2d");
     const dpr = window.devicePixelRatio || 1;
-    const width = canvas.clientWidth || 1000;
-    const height = 440;
+    const width = canvas.clientWidth || 1200;
+    const height = 470;
 
     canvas.width = width * dpr;
     canvas.height = height * dpr;
@@ -107,9 +107,9 @@ window.ret02Ui = (() => {
     ctx.font = "16px Arial";
     ctx.fillStyle = "#111";
     ctx.textAlign = "center";
-    ctx.fillText("Retirement Analysis", width / 2, 22);
+    ctx.fillText("Retirement Analysis", width / 2, 24);
 
-    const pad = { top: 60, right: 24, bottom: 78, left: 96 };
+    const pad = { top: 56, right: 20, bottom: 110, left: 92 };
     const plotW = width - pad.left - pad.right;
     const plotH = height - pad.top - pad.bottom;
 
@@ -122,7 +122,6 @@ window.ret02Ui = (() => {
     const maxVal = Math.max(...series.flatMap(s => s.values), 1);
     const yTicks = 5;
 
-    // grid + y-axis labels
     ctx.font = "12px Arial";
     ctx.textAlign = "right";
     for (let i = 0; i <= yTicks; i += 1) {
@@ -140,7 +139,6 @@ window.ret02Ui = (() => {
       ctx.fillText(currency.format(tickValue), pad.left - 10, y + 4);
     }
 
-    // axes
     ctx.strokeStyle = "#9ca3af";
     ctx.beginPath();
     ctx.moveTo(pad.left, pad.top);
@@ -148,7 +146,6 @@ window.ret02Ui = (() => {
     ctx.lineTo(width - pad.right, pad.top + plotH);
     ctx.stroke();
 
-    // lines
     series.forEach((s) => {
       ctx.strokeStyle = s.color;
       ctx.lineWidth = 2;
@@ -162,7 +159,6 @@ window.ret02Ui = (() => {
       ctx.stroke();
     });
 
-    // x-axis ticks from client age column
     const desiredTicks = Math.min(12, model.rows.length);
     const step = Math.max(1, Math.ceil(model.rows.length / desiredTicks));
     ctx.textAlign = "center";
@@ -182,10 +178,8 @@ window.ret02Ui = (() => {
       ctx.fillText(String(row.age), x, axisY + 20);
     }
 
-    // ensure last age label is shown
     if (model.rows.length > 1) {
-      const lastIndex = model.rows.length - 1;
-      const lastRow = model.rows[lastIndex];
+      const lastRow = model.rows[model.rows.length - 1];
       const x = pad.left + plotW;
       const axisY = pad.top + plotH;
       ctx.strokeStyle = "#9ca3af";
@@ -196,32 +190,22 @@ window.ret02Ui = (() => {
       ctx.fillText(String(lastRow.age), x, axisY + 20);
     }
 
-    // x-axis label
     ctx.font = "12px Arial";
     ctx.fillStyle = "#111";
-    ctx.fillText("Age", pad.left + plotW / 2, height - 16);
+    ctx.fillText("Age", pad.left + plotW / 2, pad.top + plotH + 42);
 
-    // y-axis label
-    ctx.save();
-    ctx.translate(22, pad.top + plotH / 2);
-    ctx.rotate(-Math.PI / 2);
     ctx.textAlign = "center";
-    ctx.fillStyle = "#111";
     ctx.font = "12px Arial";
-    ctx.fillText("Dollar Value", 0, 0);
-    ctx.restore();
-
-    // legend
-    ctx.textAlign = "left";
-    ctx.font = "12px Arial";
-    const legendY = 38;
-    const legendSpacing = 180;
-    const legendStartX = pad.left;
+    const legendY = height - 28;
+    const legendBlockWidth = 210;
+    const legendTotalWidth = legendBlockWidth * series.length;
+    const legendStartX = (width - legendTotalWidth) / 2;
     series.forEach((s, i) => {
-      const x = legendStartX + i * legendSpacing;
+      const x = legendStartX + i * legendBlockWidth;
       ctx.fillStyle = s.color;
       ctx.fillRect(x, legendY - 10, 12, 12);
       ctx.fillStyle = "#333";
+      ctx.textAlign = "left";
       ctx.fillText(s.label, x + 18, legendY);
     });
   }
