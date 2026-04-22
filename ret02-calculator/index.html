@@ -34,6 +34,20 @@
             <label><span>Include Social Security</span><select id="includeSS"><option>Y</option><option>N</option></select></label>
             <label><span>Single or married</span><select id="marital"><option>M</option><option>S</option></select></label>
           </div>
+
+          <div id="softWarnings" class="soft-warnings" style="display:none;"></div>
+
+          <section class="scenario-panel">
+            <h3>Scenarios</h3>
+            <label><span>Scenario name</span><input id="scenarioName" type="text" placeholder="Base case"></label>
+            <label><span>Saved scenarios</span><select id="scenarioSelect"><option value="">Select a saved scenario</option></select></label>
+            <div class="scenario-actions">
+              <button type="button" id="saveScenarioBtn" class="secondary">Save</button>
+              <button type="button" id="loadScenarioBtn" class="secondary">Load</button>
+              <button type="button" id="deleteScenarioBtn" class="secondary">Delete</button>
+            </div>
+          </section>
+
           <div class="actions">
             <button type="submit">Recalculate</button>
             <button type="button" id="resetBtn" class="secondary">Reset</button>
