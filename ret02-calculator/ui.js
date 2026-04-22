@@ -200,6 +200,109 @@ window.ret02Ui = (() => {
     });
   }
 
+  function addWrappedText(doc, text, x, y, maxWidth, lineHeight = 6) {
+    const lines = doc.splitTextToSize(text, maxWidth);
+    doc.text(lines, x, y);
+    return y + (lines.length * lineHeight);
+  }
+
+  function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'letter');
+    const input = readInputs();
+    const model = window.ret02Model.compute(input);
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 14;
+    let y = 16;
+
+    doc.setFontSize(16);
+    doc.text('Retirement Analysis Report', margin, y);
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.setTextColor(80);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y);
+    y += 8;
+
+    doc.setTextColor(0);
+    doc.setFontSize(12);
+    doc.text('Results', margin, y);
+    y += 6;
+
+    const results1 = document.getElementById('primaryMessage').textContent || '';
+    const results2 = document.getElementById('waitMessage').textContent || '';
+    y = addWrappedText(doc, results1, margin, y, pageWidth - margin * 2);
+    y += 2;
+    if (results2.trim()) {
+      y = addWrappedText(doc, results2, margin, y, pageWidth - margin * 2);
+      y += 2;
+    }
+
+    doc.setFontSize(12);
+    doc.text('Inputs', margin, y + 4);
+    y += 10;
+
+    const inputRows = [
+      ['Current age', String(input.currentAge)],
+      ['Spouse annual income', currency.format(input.spouseIncome)],
+      ['Current gross annual income', currency.format(input.currentIncome)],
+      ['Current retirement savings', currency.format(input.currentSavings)],
+      ['Inflation / salary increase', percent1.format(input.inflation)],
+      ['Desired retirement age', String(input.retireAge)],
+      ['Years of retirement income', String(input.retireYears)],
+      ['Income desired at retirement', percent1.format(input.desiredPct)],
+      ['Pre-retirement return', percent1.format(input.preReturn)],
+      ['Post-retirement return', percent1.format(input.postReturn)],
+      ['Include Social Security', input.includeSS],
+      ['Single or married', input.marital]
+    ];
+
+    const leftX = margin;
+    const rightX = pageWidth / 2 + 4;
+    inputRows.forEach((row, index) => {
+      const colX = index < 6 ? leftX : rightX;
+      const rowY = y + ((index % 6) * 6);
+      doc.setFont(undefined, 'bold');
+      doc.text(`${row[0]}:`, colX, rowY);
+      doc.setFont(undefined, 'normal');
+      doc.text(String(row[1]), colX + 38, rowY);
+    });
+    y += 40;
+
+    const canvas = document.getElementById('projectionChart');
+    const chartImage = canvas.toDataURL('image/png', 1.0);
+    const chartWidth = pageWidth - margin * 2;
+    const chartHeight = 70;
+
+    if (y + chartHeight + 10 > pageHeight - margin) {
+      doc.addPage();
+      y = margin;
+    }
+
+    doc.setFontSize(12);
+    doc.text('Chart', margin, y);
+    y += 4;
+    doc.addImage(chartImage, 'PNG', margin, y, chartWidth, chartHeight);
+    y += chartHeight + 8;
+
+    doc.addPage();
+    doc.setFontSize(12);
+    doc.text('Projection Table', margin, margin);
+
+    doc.autoTable({
+      html: '#projectionTable',
+      startY: margin + 4,
+      styles: { fontSize: 7, cellPadding: 1.5 },
+      headStyles: { fillColor: [255, 255, 255], textColor: 0, lineWidth: 0.2 },
+      alternateRowStyles: { fillColor: [249, 250, 251] },
+      margin: { left: margin, right: margin },
+      theme: 'grid'
+    });
+
+    doc.save('retirement-analysis-report.pdf');
+  }
+
   function render() {
     const input = readInputs();
     const model = window.ret02Model.compute(input);
@@ -223,6 +326,10 @@ window.ret02Ui = (() => {
       fillDefaults();
       render();
     });
+    const exportBtn = document.getElementById('exportPdfBtn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', exportPDF);
+    }
   }
 
   return { init };
