@@ -158,6 +158,40 @@ window.ret02Ui = (() => {
     return errors.length === 0;
   }
 
+  function getSoftWarnings(input) {
+    const warnings = [];
+
+    if (input.preReturn > 0.08) {
+      warnings.push('Pre-retirement return above 8% is aggressive.');
+    }
+    if (input.postReturn > 0.06) {
+      warnings.push('Post-retirement return above 6% is aggressive.');
+    }
+    if (input.inflation > 0.05) {
+      warnings.push('Inflation above 5% is higher than typical long-term assumptions.');
+    }
+    if (input.desiredPct > 1) {
+      warnings.push('Desired retirement income above 100% of current income is unusually high.');
+    }
+
+    return warnings;
+  }
+
+  function renderSoftWarnings(input) {
+    const box = document.getElementById('softWarnings');
+    if (!box) return;
+
+    const warnings = getSoftWarnings(input);
+    if (!warnings.length) {
+      box.innerHTML = '';
+      box.style.display = 'none';
+      return;
+    }
+
+    box.innerHTML = warnings.map((warning) => `<div>⚠ ${warning}</div>`).join('');
+    box.style.display = 'block';
+  }
+
   function fmtCurrency(value, showSymbol = false) {
     const rounded = Math.round(value);
     const formatted = Math.abs(rounded).toLocaleString('en-US');
@@ -429,6 +463,7 @@ window.ret02Ui = (() => {
   function render() {
     clearValidationState();
     const input = readInputs();
+    renderSoftWarnings(input);
     if (!validateInputs(input)) {
       clearOutputs();
       return;
