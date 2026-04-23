@@ -173,6 +173,9 @@ window.ret02Ui = (() => {
     if (input.desiredPct > 1) {
       warnings.push('Desired retirement income above 100% of current income is unusually high.');
     }
+    if (input.inflation > input.postReturn) {
+      warnings.push('Purchasing power will be reduced if inflation exceeds post-retirement investment return.');
+    }
 
     return warnings;
   }
