@@ -419,6 +419,13 @@ window.ret02Ui = (() => {
     ['currentAge', 'retireAge', 'retireYears', 'includeSS', 'marital', ...percentFields, ...currencyFields].forEach((id) => ensureInlineError(id));
   }
 
+  function bindAutoRenderInputs() {
+    document.querySelectorAll('#calc-form .input-list input, #calc-form .input-list select').forEach((el) => {
+      el.addEventListener('blur', render);
+      el.addEventListener('change', render);
+    });
+  }
+
   function render() {
     clearValidationState();
     const input = readInputs();
@@ -437,17 +444,13 @@ window.ret02Ui = (() => {
     bindInlineValidationTargets();
     bindPercentFormatting();
     bindCurrencyFormatting();
+    bindAutoRenderInputs();
     loadScenarioDropdown();
     render();
 
     document.getElementById('calc-form').addEventListener('submit', (e) => {
       e.preventDefault();
       render();
-    });
-
-    document.querySelectorAll('#calc-form input, #calc-form select').forEach((el) => {
-      el.addEventListener('blur', render);
-      el.addEventListener('change', render);
     });
 
     document.getElementById('resetBtn').addEventListener('click', () => {
