@@ -1,7 +1,13 @@
 (() => {
-  const enabled = new URLSearchParams(window.location.search).get('aiassist') === 'on';
+  const params = new URLSearchParams(window.location.search);
+  const enabled = params.get('aiassist') === 'on';
   if (!enabled) return;
   document.body.classList.add('ai-enabled');
+
+  // During testing, pass ?aiendpoint=https://YOUR-WORKER.workers.dev/chat.
+  // For release, replace the empty string with the deployed Worker URL.
+  const configuredEndpoint = '';
+  const aiEndpoint = params.get('aiendpoint') || configuredEndpoint;
 
   const fields = {
     currentAge:{label:'Current age',use:'Determines how many years remain before retirement and the starting age of the projection.',range:'18 to 90',value:'45',guidance:'Use your current age.'},
@@ -21,6 +27,8 @@
   const modal=document.getElementById('aiModal'), title=document.getElementById('aiDialogTitle'), conversation=document.getElementById('aiConversation'), question=document.getElementById('aiQuestion'), form=document.getElementById('aiChatForm'), suggestionBar=document.getElementById('aiSuggestionBar'), suggestedValue=document.getElementById('aiSuggestedValue'), useButton=document.getElementById('useSuggestionBtn');
   let activeField=null;
   let resultsContext='';
+  let chatHistory=[];
+  let requestInProgress=false;
   const escapeHtml=text=>String(text).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
   const currentValue=id=>document.getElementById(id)?.value||'';
   const cleanText=id=>(document.getElementById(id)?.innerText||'').replace(/\s+/g,' ').trim();
@@ -31,9 +39,20 @@
     const metrics=cleanText('metrics');
     return [primary,wait,metrics].filter(Boolean).join('\n');
   }
+  function collectCalculatorContext(){
+    const inputs={};
+    Object.keys(fields).forEach(id=>{inputs[id]=currentValue(id);});
+    return {
+      activeField,
+      field:activeField==='resultsSummary'?null:fields[activeField]||null,
+      inputs,
+      resultsSummary:collectResultsContext()
+    };
+  }
   function openResultsAssistant(){
     activeField='resultsSummary';
     resultsContext=collectResultsContext();
+    chatHistory=[];
     title.textContent='Results explanation';
     conversation.innerHTML='';
     suggestionBar.hidden=true;
@@ -45,6 +64,7 @@
   function openAssistant(id){
     if(id==='resultsSummary'){openResultsAssistant();return;}
     activeField=id;
+    chatHistory=[];
     const field=fields[id];
     if(!field)return;
     title.textContent=field.label;
@@ -55,7 +75,7 @@
     modal.hidden=false;
     question.focus();
   }
-  function closeAssistant(){modal.hidden=true;activeField=null;resultsContext='';}
+  function closeAssistant(){modal.hidden=true;activeField=null;resultsContext='';chatHistory=[];}
   function resultsReply(text){
     const q=text.toLowerCase();
     if(!resultsContext)return'No calculated result is available yet. Recalculate the plan and reopen the Results Assistant.';
@@ -64,20 +84,62 @@
     if(q.includes('table')||q.includes('year'))return'The year-by-year table is the detailed calculation behind the chart. Read across each row to see the age, projected income, contributions or withdrawals, investment growth, and ending balance for that year. The final rows help show whether the plan retains assets through the selected retirement period.';
     if(q.includes('improve')||q.includes('change')||q.includes('largest')||q.includes('better'))return'Common changes that can materially affect the illustration include retiring later, increasing current savings or annual contributions, reducing the retirement-income target, extending or shortening the retirement period, and changing return or inflation assumptions. Testing one change at a time makes the effect easier to understand.';
     if(q.includes('social security'))return'When Social Security is included, the estimated benefit offsets part of the desired retirement income, reducing the amount that must be withdrawn from savings. The result remains sensitive to the benefit estimate and the age at which income begins.';
-    return`I am using the current result paragraph and displayed metrics as context. For this scripted prototype, I can explain the shortfall or surplus, chart, year-by-year table, Social Security effect, and which assumptions commonly have the greatest impact. Your current displayed context is: ${resultsContext}`;
+    return`I am using the current result paragraph and displayed metrics as context. I can explain the shortfall or surplus, chart, year-by-year table, Social Security effect, and which assumptions commonly have the greatest impact.`;
   }
-  function replyFor(text){
+  function scriptedReply(text){
     if(activeField==='resultsSummary')return resultsReply(text);
     const q=text.toLowerCase(),field=fields[activeField];
     if(q.includes('why')&&q.includes('8'))return'An 8% assumption may reflect a stock-heavy historical average, but retirement projections are sensitive to market timing and sequence-of-returns risk. A lower illustration can provide a more conservative stress test. Actual returns remain uncertain.';
     if(q.includes('inflation'))return'Inflation reduces purchasing power. In this calculator, inflation also increases future salary and desired retirement income. When post-retirement return is below inflation, the portfolio may lose purchasing power even when its dollar balance grows.';
     if(q.includes('range')||q.includes('limit'))return`The calculator accepts ${field.range}. The range prevents invalid entries, but a valid entry is not automatically appropriate for every user.`;
     if(q.includes('change')||q.includes('result'))return`${field.label} affects the projection because it ${field.use.charAt(0).toLowerCase()}${field.use.slice(1)} Changing it can alter required savings, withdrawals, and ending balances.`;
-    return`For this prototype, I can explain how ${field.label.toLowerCase()} is used, its allowed range, and general educational planning considerations. A production version would securely send your question and calculator context to an AI service.`;
+    return`I can explain how ${field.label.toLowerCase()} is used, its allowed range, and general educational planning considerations.`;
+  }
+  async function liveReply(text){
+    if(!aiEndpoint)return scriptedReply(text);
+    const response=await fetch(aiEndpoint,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        question:text,
+        mode:activeField==='resultsSummary'?'results':'input',
+        calculatorContext:collectCalculatorContext(),
+        conversation:chatHistory.slice(-6)
+      })
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.error||'The assistant is temporarily unavailable.');
+    if(!data.answer)throw new Error('The assistant returned an empty response.');
+    return data.answer;
   }
   document.querySelectorAll('.ai-help-icon').forEach(button=>button.addEventListener('click',()=>openAssistant(button.dataset.field)));
   document.querySelectorAll('[data-close-ai]').forEach(button=>button.addEventListener('click',closeAssistant));
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!modal.hidden)closeAssistant();});
-  form.addEventListener('submit',event=>{event.preventDefault();const text=question.value.trim();if(!text||!activeField)return;conversation.insertAdjacentHTML('beforeend',`<div class="ai-message user">${escapeHtml(text)}</div>`);question.value='';window.setTimeout(()=>assistantMessage(`<p>${escapeHtml(replyFor(text))}</p>`),250);});
+  form.addEventListener('submit',async event=>{
+    event.preventDefault();
+    const text=question.value.trim();
+    if(!text||!activeField||requestInProgress)return;
+    requestInProgress=true;
+    question.disabled=true;
+    conversation.insertAdjacentHTML('beforeend',`<div class="ai-message user">${escapeHtml(text)}</div>`);
+    question.value='';
+    try{
+      assistantMessage('<p>Thinking…</p>');
+      const pending=conversation.lastElementChild;
+      const answer=await liveReply(text);
+      pending.remove();
+      assistantMessage(`<p>${escapeHtml(answer).replace(/\n/g,'<br>')}</p>`);
+      chatHistory.push({role:'user',content:text},{role:'assistant',content:answer});
+      chatHistory=chatHistory.slice(-8);
+    }catch(error){
+      conversation.lastElementChild?.remove();
+      const fallback=scriptedReply(text);
+      assistantMessage(`<p>${escapeHtml(fallback)}</p><p><small>Live AI is currently unavailable; this is the built-in educational response.</small></p>`);
+    }finally{
+      requestInProgress=false;
+      question.disabled=false;
+      question.focus();
+    }
+  });
   useButton.addEventListener('click',()=>{if(!activeField||activeField==='resultsSummary')return;const input=document.getElementById(activeField);input.value=fields[activeField].value;input.dispatchEvent(new Event('change',{bubbles:true}));assistantMessage(`<p>The illustrative value <strong>${escapeHtml(fields[activeField].value)}</strong> was inserted. You remain responsible for reviewing and changing the entry.</p>`);});
 })();
