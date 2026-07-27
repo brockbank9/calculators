@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+  <title id="title">AI Retirement Assistant</title>
+  <desc id="desc">Friendly illustrated assistant wearing business attire</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2563eb"/><stop offset="1" stop-color="#0f766e"/></linearGradient>
+    <linearGradient id="jacket" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#1e3a8a"/><stop offset="1" stop-color="#172554"/></linearGradient>
+  </defs>
+  <circle cx="80" cy="80" r="78" fill="url(#bg)"/>
+  <circle cx="80" cy="65" r="35" fill="#f2c9a5"/>
+  <path d="M46 57c3-25 17-38 36-38 21 0 35 15 35 39-10-8-23-13-39-13-12 0-23 4-32 12z" fill="#334155"/>
+  <path d="M55 64c0 28 10 43 25 43s26-15 26-43c-7 5-16 8-26 8-9 0-18-3-25-8z" fill="#f2c9a5"/>
+  <circle cx="68" cy="69" r="3" fill="#1f2937"/><circle cx="93" cy="69" r="3" fill="#1f2937"/>
+  <path d="M70 84c7 6 14 6 21 0" fill="none" stroke="#9a523b" stroke-width="3" stroke-linecap="round"/>
+  <path d="M25 151c3-29 22-47 55-47s52 18 55 47" fill="url(#jacket)"/>
+  <path d="M61 108l19 19 19-19-8-7H69z" fill="#fff"/>
+  <path d="M75 122h10l5 29H70z" fill="#14b8a6"/>
+  <circle cx="126" cy="35" r="17" fill="#fff" opacity=".96"/>
+  <path d="M126 24v22M115 35h22" stroke="#2563eb" stroke-width="5" stroke-linecap="round"/>
+</svg>
