@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RET02 Retirement Calculator — AI Help Prototype</title>
+  <title>RET02 Retirement Calculator — AI Assistant Prototype</title>
   <link rel="stylesheet" href="../ret02-calculator/styles.css">
   <link rel="stylesheet" href="prototype.css">
 </head>
@@ -13,9 +13,9 @@
       <div>
         <p class="eyebrow">Release 1.1 prototype</p>
         <h1>Retirement Income Planning Calculator</h1>
-        <p class="subhead">Click the ✦ icon beside any input for an explanation, planning guidance, and follow-up help.</p>
+        <p class="subhead">The optional AI Retirement Assistant explains inputs, provides educational planning context, and answers follow-up questions.</p>
       </div>
-      <span class="prototype-badge">AI Help Prototype</span>
+      <span class="prototype-badge">AI Assistant Enabled</span>
     </header>
 
     <section class="workspace">
@@ -23,18 +23,18 @@
         <form id="calc-form" class="inputs-form">
           <h2>Inputs</h2>
           <div class="input-list">
-            <label><span>Current age <button class="ai-help-icon" type="button" data-field="currentAge" aria-label="AI help for current age">✦</button></span><input id="currentAge" type="number"></label>
-            <label><span>Current gross annual income <button class="ai-help-icon" type="button" data-field="currentIncome" aria-label="AI help for current income">✦</button></span><input id="currentIncome" type="text" inputmode="numeric"></label>
-            <label><span>Spouse annual income <button class="ai-help-icon" type="button" data-field="spouseIncome" aria-label="AI help for spouse income">✦</button></span><input id="spouseIncome" type="text" inputmode="numeric"></label>
-            <label><span>Current retirement savings <button class="ai-help-icon" type="button" data-field="currentSavings" aria-label="AI help for current savings">✦</button></span><input id="currentSavings" type="text" inputmode="numeric"></label>
-            <label><span>Inflation / salary increase <button class="ai-help-icon" type="button" data-field="inflation" aria-label="AI help for inflation">✦</button></span><input id="inflation" type="text" inputmode="decimal" class="percent-input"></label>
-            <label><span>Desired retirement age <button class="ai-help-icon" type="button" data-field="retireAge" aria-label="AI help for retirement age">✦</button></span><input id="retireAge" type="number"></label>
-            <label><span>Years of retirement income <button class="ai-help-icon" type="button" data-field="retireYears" aria-label="AI help for retirement years">✦</button></span><input id="retireYears" type="number"></label>
-            <label><span>Income desired at retirement <button class="ai-help-icon" type="button" data-field="desiredPct" aria-label="AI help for desired income">✦</button></span><input id="desiredPct" type="text" inputmode="decimal" class="percent-input"></label>
-            <label><span>Pre-retirement return <button class="ai-help-icon" type="button" data-field="preReturn" aria-label="AI help for pre-retirement return">✦</button></span><input id="preReturn" type="text" inputmode="decimal" class="percent-input"></label>
-            <label><span>Post-retirement return <button class="ai-help-icon" type="button" data-field="postReturn" aria-label="AI help for post-retirement return">✦</button></span><input id="postReturn" type="text" inputmode="decimal" class="percent-input"></label>
-            <label><span>Include Social Security <button class="ai-help-icon" type="button" data-field="includeSS" aria-label="AI help for Social Security">✦</button></span><select id="includeSS"><option>Y</option><option>N</option></select></label>
-            <label><span>Single or married <button class="ai-help-icon" type="button" data-field="marital" aria-label="AI help for marital status">✦</button></span><select id="marital"><option>M</option><option>S</option></select></label>
+            <label><span>Current age <button class="ai-help-icon" type="button" data-field="currentAge" aria-label="AI Assistant help for current age">👨‍💼</button></span><input id="currentAge" type="number"></label>
+            <label><span>Current gross annual income <button class="ai-help-icon" type="button" data-field="currentIncome" aria-label="AI Assistant help for current income">👨‍💼</button></span><input id="currentIncome" type="text" inputmode="numeric"></label>
+            <label><span>Spouse annual income <button class="ai-help-icon" type="button" data-field="spouseIncome" aria-label="AI Assistant help for spouse income">👨‍💼</button></span><input id="spouseIncome" type="text" inputmode="numeric"></label>
+            <label><span>Current retirement savings <button class="ai-help-icon" type="button" data-field="currentSavings" aria-label="AI Assistant help for current savings">👨‍💼</button></span><input id="currentSavings" type="text" inputmode="numeric"></label>
+            <label><span>Inflation / salary increase <button class="ai-help-icon" type="button" data-field="inflation" aria-label="AI Assistant help for inflation">👨‍💼</button></span><input id="inflation" type="text" inputmode="decimal" class="percent-input"></label>
+            <label><span>Desired retirement age <button class="ai-help-icon" type="button" data-field="retireAge" aria-label="AI Assistant help for retirement age">👨‍💼</button></span><input id="retireAge" type="number"></label>
+            <label><span>Years of retirement income <button class="ai-help-icon" type="button" data-field="retireYears" aria-label="AI Assistant help for retirement years">👨‍💼</button></span><input id="retireYears" type="number"></label>
+            <label><span>Income desired at retirement <button class="ai-help-icon" type="button" data-field="desiredPct" aria-label="AI Assistant help for desired income">👨‍💼</button></span><input id="desiredPct" type="text" inputmode="decimal" class="percent-input"></label>
+            <label><span>Pre-retirement return <button class="ai-help-icon" type="button" data-field="preReturn" aria-label="AI Assistant help for pre-retirement return">👨‍💼</button></span><input id="preReturn" type="text" inputmode="decimal" class="percent-input"></label>
+            <label><span>Post-retirement return <button class="ai-help-icon" type="button" data-field="postReturn" aria-label="AI Assistant help for post-retirement return">👨‍💼</button></span><input id="postReturn" type="text" inputmode="decimal" class="percent-input"></label>
+            <label><span>Include Social Security <button class="ai-help-icon" type="button" data-field="includeSS" aria-label="AI Assistant help for Social Security">👨‍💼</button></span><select id="includeSS"><option>Y</option><option>N</option></select></label>
+            <label><span>Single or married <button class="ai-help-icon" type="button" data-field="marital" aria-label="AI Assistant help for marital status">👨‍💼</button></span><select id="marital"><option>M</option><option>S</option></select></label>
           </div>
 
           <div id="softWarnings" class="soft-warnings" style="display:none;"></div>
@@ -69,19 +69,22 @@
     <div class="ai-modal-backdrop" data-close-ai></div>
     <section class="ai-dialog" role="dialog" aria-modal="true" aria-labelledby="aiDialogTitle">
       <header class="ai-dialog-header">
-        <div><p class="ai-kicker">AI field guide</p><h2 id="aiDialogTitle">Input help</h2></div>
-        <button type="button" class="ai-close" data-close-ai aria-label="Close AI help">×</button>
+        <div class="ai-heading">
+          <div class="ai-avatar" aria-hidden="true">👨‍💼</div>
+          <div><p class="ai-kicker">AI Retirement Assistant</p><h2 id="aiDialogTitle">Input help</h2></div>
+        </div>
+        <button type="button" class="ai-close" data-close-ai aria-label="Close AI Assistant">×</button>
       </header>
       <div id="aiConversation" class="ai-conversation" aria-live="polite"></div>
       <div id="aiSuggestionBar" class="ai-suggestion-bar" hidden>
         <span id="aiSuggestedValue"></span>
-        <button id="useSuggestionBtn" type="button">Use suggested value</button>
+        <button id="useSuggestionBtn" type="button">Apply illustrative value</button>
       </div>
       <form id="aiChatForm" class="ai-chat-form">
-        <input id="aiQuestion" type="text" placeholder="Ask a follow-up question…" autocomplete="off">
+        <input id="aiQuestion" type="text" placeholder="Ask the AI Assistant a follow-up question…" autocomplete="off">
         <button type="submit">Ask</button>
       </form>
-      <p class="ai-disclaimer">Prototype guidance only—not individualized financial advice. This demo uses scripted responses; a secure backend will connect the production version to OpenAI.</p>
+      <p class="ai-disclaimer">The AI Assistant provides educational information about this calculator and general planning concepts. It does not provide financial, investment, tax, or legal advice. This prototype uses scripted responses.</p>
     </section>
   </div>
 
