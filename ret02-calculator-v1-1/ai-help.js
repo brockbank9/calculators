@@ -4,9 +4,8 @@
   if (!enabled) return;
   document.body.classList.add('ai-enabled');
 
-  // During testing, pass ?aiendpoint=https://YOUR-WORKER.workers.dev/chat.
-  // For release, replace the empty string with the deployed Worker URL.
-  const configuredEndpoint = '';
+  // The query-string override remains available for controlled testing.
+  const configuredEndpoint = 'https://retirement-assistant.brockbank.workers.dev/chat';
   const aiEndpoint = params.get('aiendpoint') || configuredEndpoint;
 
   const fields = {
