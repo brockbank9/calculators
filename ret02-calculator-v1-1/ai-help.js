@@ -107,8 +107,12 @@
       })
     });
     const data=await response.json().catch(()=>({}));
-    if(!response.ok)throw new Error(data.error||'The assistant is temporarily unavailable.');
-    if(!data.answer)throw new Error('The assistant returned an empty response.');
+    if(!response.ok){
+      const error=new Error(data.error||'The live AI assistant is temporarily unavailable.');
+      error.requestId=data.requestId||response.headers.get('X-Request-ID')||'';
+      throw error;
+    }
+    if(!data.answer)throw new Error('The live AI assistant returned an incomplete response.');
     return data.answer;
   }
   document.querySelectorAll('.ai-help-icon').forEach(button=>button.addEventListener('click',()=>openAssistant(button.dataset.field)));
@@ -133,7 +137,8 @@
     }catch(error){
       conversation.lastElementChild?.remove();
       const fallback=scriptedReply(text);
-      assistantMessage(`<p>${escapeHtml(fallback)}</p><p><small>Live AI is currently unavailable; this is the built-in educational response.</small></p>`);
+      const reference=error.requestId?` Reference: ${escapeHtml(error.requestId)}.`:'';
+      assistantMessage(`<p>${escapeHtml(fallback)}</p><p><small>The live AI assistant could not respond, so this built-in educational explanation is being shown.${reference} You can continue using the calculator and try the live assistant again later.</small></p>`);
     }finally{
       requestInProgress=false;
       question.disabled=false;
