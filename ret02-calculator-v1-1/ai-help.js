@@ -29,10 +29,7 @@
     const primary=cleanText('primaryMessage');
     const wait=cleanText('waitMessage');
     const metrics=cleanText('metrics');
-    const rows=[...document.querySelectorAll('#projectionTable tbody tr')];
-    const first=rows[0]?.innerText.replace(/\s+/g,' ').trim()||'';
-    const last=rows[rows.length-1]?.innerText.replace(/\s+/g,' ').trim()||'';
-    return [primary,wait,metrics,first&&`First projection row: ${first}`,last&&`Final projection row: ${last}`].filter(Boolean).join('\n');
+    return [primary,wait,metrics].filter(Boolean).join('\n');
   }
   function openResultsAssistant(){
     activeField='resultsSummary';
@@ -67,7 +64,7 @@
     if(q.includes('table')||q.includes('year'))return'The year-by-year table is the detailed calculation behind the chart. Read across each row to see the age, projected income, contributions or withdrawals, investment growth, and ending balance for that year. The final rows help show whether the plan retains assets through the selected retirement period.';
     if(q.includes('improve')||q.includes('change')||q.includes('largest')||q.includes('better'))return'Common changes that can materially affect the illustration include retiring later, increasing current savings or annual contributions, reducing the retirement-income target, extending or shortening the retirement period, and changing return or inflation assumptions. Testing one change at a time makes the effect easier to understand.';
     if(q.includes('social security'))return'When Social Security is included, the estimated benefit offsets part of the desired retirement income, reducing the amount that must be withdrawn from savings. The result remains sensitive to the benefit estimate and the age at which income begins.';
-    return`I am using the current result paragraph, displayed metrics, and the first and final projection rows as context. For this scripted prototype, I can explain the shortfall or surplus, chart, year-by-year table, Social Security effect, and which assumptions commonly have the greatest impact. Your current displayed context is: ${resultsContext}`;
+    return`I am using the current result paragraph and displayed metrics as context. For this scripted prototype, I can explain the shortfall or surplus, chart, year-by-year table, Social Security effect, and which assumptions commonly have the greatest impact. Your current displayed context is: ${resultsContext}`;
   }
   function replyFor(text){
     if(activeField==='resultsSummary')return resultsReply(text);
