@@ -26,12 +26,13 @@ function corsHeaders(origin) {
   };
 }
 
-function json(body, status, origin) {
+function json(body, status, origin, requestId) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'no-store',
+      'X-Request-ID': requestId,
       ...corsHeaders(origin)
     }
   });
@@ -82,47 +83,88 @@ function extractOutputText(data) {
     .trim();
 }
 
+function recordEvent(env, details) {
+  const event = {
+    timestamp: new Date().toISOString(),
+    ...details
+  };
+  console.log(JSON.stringify(event));
+
+  if (env.AI_METRICS) {
+    env.AI_METRICS.writeDataPoint({
+      blobs: [
+        details.event || 'chat',
+        details.outcome || 'unknown',
+        details.mode || 'unknown',
+        details.model || 'unknown',
+        String(details.status || 0)
+      ],
+      doubles: [
+        1,
+        Number(details.durationMs || 0),
+        Number(details.inputTokens || 0),
+        Number(details.outputTokens || 0),
+        Number(details.totalTokens || 0)
+      ],
+      indexes: [details.mode || 'unknown']
+    });
+  }
+}
+
 export default {
   async fetch(request, env) {
+    const startedAt = Date.now();
+    const requestId = crypto.randomUUID();
     const origin = request.headers.get('Origin') || '';
+    const model = env.OPENAI_MODEL || 'gpt-5-mini';
+
     if (!ALLOWED_ORIGINS.has(origin)) {
-      return new Response('Forbidden', { status: 403 });
+      recordEvent(env, { event: 'chat', outcome: 'forbidden_origin', status: 403, durationMs: Date.now() - startedAt, model });
+      return new Response('Forbidden', { status: 403, headers: { 'X-Request-ID': requestId } });
     }
 
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: corsHeaders(origin) });
+      return new Response(null, { status: 204, headers: { ...corsHeaders(origin), 'X-Request-ID': requestId } });
     }
 
     const url = new URL(request.url);
     if (request.method !== 'POST' || url.pathname !== '/chat') {
-      return json({ error: 'Not found.' }, 404, origin);
+      recordEvent(env, { event: 'chat', outcome: 'not_found', status: 404, durationMs: Date.now() - startedAt, model });
+      return json({ error: 'Not found.', requestId }, 404, origin, requestId);
     }
 
     const contentLength = Number(request.headers.get('Content-Length') || 0);
     if (contentLength > 20000) {
-      return json({ error: 'Request is too large.' }, 413, origin);
+      recordEvent(env, { event: 'chat', outcome: 'request_too_large', status: 413, durationMs: Date.now() - startedAt, model });
+      return json({ error: 'Request is too large.', requestId }, 413, origin, requestId);
     }
 
     if (env.RATE_LIMITER) {
       const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
       const { success } = await env.RATE_LIMITER.limit({ key: ip });
-      if (!success) return json({ error: 'Too many requests. Please try again shortly.' }, 429, origin);
+      if (!success) {
+        recordEvent(env, { event: 'chat', outcome: 'rate_limited', status: 429, durationMs: Date.now() - startedAt, model });
+        return json({ error: 'Too many requests. Please try again shortly.', requestId }, 429, origin, requestId);
+      }
     }
 
     let body;
     try {
       body = await request.json();
     } catch {
-      return json({ error: 'Invalid JSON request.' }, 400, origin);
+      recordEvent(env, { event: 'chat', outcome: 'invalid_json', status: 400, durationMs: Date.now() - startedAt, model });
+      return json({ error: 'Invalid JSON request.', requestId }, 400, origin, requestId);
     }
 
     const question = safeString(body?.question, 1200).trim();
-    if (!question) return json({ error: 'Please enter a question.' }, 400, origin);
+    if (!question) {
+      recordEvent(env, { event: 'chat', outcome: 'empty_question', status: 400, durationMs: Date.now() - startedAt, model });
+      return json({ error: 'Please enter a question.', requestId }, 400, origin, requestId);
+    }
 
     const mode = body?.mode === 'results' ? 'results' : 'input';
     const calculatorContext = compactContext(body?.calculatorContext);
     const conversation = sanitizeConversation(body?.conversation);
-
     const input = [
       ...conversation,
       {
@@ -140,26 +182,50 @@ export default {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: env.OPENAI_MODEL || 'gpt-5-mini',
+          model,
           instructions: SYSTEM_INSTRUCTIONS,
           input,
-          max_output_tokens: 450,
+          reasoning: { effort: 'minimal' },
+          max_output_tokens: 900,
           store: false
         })
       });
-    } catch {
-      return json({ error: 'The AI service could not be reached.' }, 502, origin);
+    } catch (error) {
+      recordEvent(env, { event: 'chat', outcome: 'openai_unreachable', status: 502, durationMs: Date.now() - startedAt, mode, model });
+      console.error(JSON.stringify({ requestId, error: error?.message || 'OpenAI fetch failed' }));
+      return json({ error: 'The live AI service could not be reached. A built-in educational explanation is shown instead.', requestId }, 502, origin, requestId);
     }
 
     const data = await openAIResponse.json().catch(() => ({}));
+    const usage = data?.usage || {};
+    const usageDetails = {
+      inputTokens: usage.input_tokens || 0,
+      outputTokens: usage.output_tokens || 0,
+      totalTokens: usage.total_tokens || 0
+    };
+
     if (!openAIResponse.ok) {
-      console.error('OpenAI request failed', openAIResponse.status, data?.error?.type || 'unknown');
-      return json({ error: 'The AI assistant is temporarily unavailable.' }, 502, origin);
+      recordEvent(env, {
+        event: 'chat', outcome: 'openai_error', status: openAIResponse.status,
+        durationMs: Date.now() - startedAt, mode, model, ...usageDetails
+      });
+      console.error(JSON.stringify({ requestId, openAIStatus: openAIResponse.status, openAIErrorType: data?.error?.type || 'unknown', openAIErrorCode: data?.error?.code || 'unknown' }));
+      return json({ error: 'The live AI service is temporarily unavailable. A built-in educational explanation is shown instead.', requestId }, 502, origin, requestId);
     }
 
     const answer = extractOutputText(data);
-    if (!answer) return json({ error: 'The AI assistant returned no answer.' }, 502, origin);
+    if (!answer) {
+      recordEvent(env, {
+        event: 'chat', outcome: 'empty_answer', status: 502,
+        durationMs: Date.now() - startedAt, mode, model, ...usageDetails
+      });
+      return json({ error: 'The live AI service returned an incomplete response. A built-in educational explanation is shown instead.', requestId }, 502, origin, requestId);
+    }
 
-    return json({ answer }, 200, origin);
+    recordEvent(env, {
+      event: 'chat', outcome: 'success', status: 200,
+      durationMs: Date.now() - startedAt, mode, model, ...usageDetails
+    });
+    return json({ answer, requestId }, 200, origin, requestId);
   }
 };
