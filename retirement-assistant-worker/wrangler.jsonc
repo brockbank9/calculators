@@ -4,12 +4,22 @@
   "main": "src/index.js",
   "compatibility_date": "2026-07-27",
   "workers_dev": true,
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
   "secrets": {
     "required": ["OPENAI_API_KEY"]
   },
   "vars": {
     "OPENAI_MODEL": "gpt-5-mini"
   },
+  "analytics_engine_datasets": [
+    {
+      "binding": "AI_METRICS",
+      "dataset": "retirement_assistant_metrics"
+    }
+  ],
   "ratelimits": [
     {
       "name": "RATE_LIMITER",
