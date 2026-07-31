@@ -8,7 +8,14 @@
   const speechEndpoint = params.get('aiprovoiceendpoint') || chatEndpoint.replace(/\/chat$/, '/speech');
   const launchButton = document.getElementById('askProBtn');
   const modal = document.getElementById('proPreview');
+  const enabledBadge = document.querySelector('.aipro-badge');
   const inputIds = ['currentAge','currentIncome','spouseIncome','currentSavings','inflation','retireAge','retireYears','desiredPct','preReturn','postReturn','includeSS','marital'];
+
+  if (launchButton) {
+    launchButton.textContent = 'Ask a Professional';
+    launchButton.setAttribute('aria-label', 'Open AI Professional');
+  }
+  if (enabledBadge) enabledBadge.textContent = 'AI Professional Enabled';
 
   let history = [];
   let busy = false;
@@ -34,18 +41,18 @@
     modal.innerHTML = `
       <div class="pro-preview-backdrop" data-close-pro></div>
       <section class="pro-dialog" role="dialog" aria-modal="true" aria-labelledby="proTitle">
-        <button type="button" class="pro-preview-close" data-close-pro aria-label="Close Ask a Pro">×</button>
+        <button type="button" class="pro-preview-close" data-close-pro aria-label="Close Ask a Professional">×</button>
         <header class="pro-titlebar">
-          <div><p class="pro-kicker">AI Pro</p><h2 id="proTitle">Ask a Pro</h2></div>
+          <div><p class="pro-kicker">AI Professional</p><h2 id="proTitle">Ask a Professional</h2></div>
           <span id="proStatus" class="pro-status" aria-live="polite">Ready</span>
         </header>
         <div class="pro-stage">
-          <div id="proAvatar" class="pro-avatar-figure" role="img" aria-label="Animated professional AI presenter">
+          <div id="proAvatar" class="pro-avatar-figure" role="img" aria-label="Animated female AI professional presenter">
             <div class="pro-hair"></div><div class="pro-ear left"></div><div class="pro-ear right"></div>
             <div class="pro-face"><span class="pro-eye left"></span><span class="pro-eye right"></span><span class="pro-nose"></span><span class="pro-mouth"></span></div>
             <div class="pro-neck"></div><div class="pro-shirt"></div><div class="pro-jacket"></div><div class="pro-tie"></div>
           </div>
-          <div id="proCaption" class="pro-caption" aria-live="polite">Ask a question about the current calculator inputs or generated results.</div>
+          <div id="proCaption" class="pro-caption" aria-live="polite">Hello! I'm your AI Professional. I can explain your retirement projection, answer questions about the calculator, and explore what-if scenarios using your current assumptions.</div>
           <div class="pro-controls">
             <button id="proMute" type="button" class="pro-control">🔊 Voice on</button>
             <button id="proReplay" type="button" class="pro-control" disabled>↻ Replay</button>
@@ -55,7 +62,7 @@
           <input id="proQuestion" type="text" maxlength="1200" placeholder="Ask about this retirement projection…" autocomplete="off">
           <button type="submit">Ask</button>
         </form>
-        <p class="pro-disclaimer">AI Pro is an educational presentation feature, not a financial professional. It does not provide financial, investment, tax, legal, insurance, or estate-planning advice. The voice is AI-generated.</p>
+        <p class="pro-disclaimer">The AI Professional is an educational presentation feature, not a financial professional. It does not provide financial, investment, tax, legal, insurance, or estate-planning advice. The voice is AI-generated.</p>
       </section>`;
 
     modal.querySelectorAll('[data-close-pro]').forEach(element => element.addEventListener('click', close));
@@ -80,7 +87,7 @@
     if (muted || !window.speechSynthesis) { status('Ready'); return; }
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.96;
-    utterance.pitch = 0.96;
+    utterance.pitch = 1.04;
     utterance.onstart = () => { animate(true); status('Speaking'); };
     utterance.onend = () => { animate(false); status('Ready'); };
     utterance.onerror = () => { animate(false); status('Voice unavailable'); };
@@ -108,7 +115,7 @@
       body:JSON.stringify({ question, mode:'pro', calculatorContext:calculatorContext(), conversation:history.slice(-6) })
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data.answer) throw new Error(data.error || 'AI Pro is temporarily unavailable.');
+    if (!response.ok || !data.answer) throw new Error(data.error || 'The AI Professional is temporarily unavailable.');
     return data.answer;
   }
 
@@ -127,7 +134,7 @@
       history = history.slice(-8); lastAnswer = answer;
       caption(answer); modal.querySelector('#proReplay').disabled = false;
       await speak(answer);
-    } catch (error) { caption(error.message || 'AI Pro is temporarily unavailable.', true); status('Unavailable'); }
+    } catch (error) { caption(error.message || 'The AI Professional is temporarily unavailable.', true); status('Unavailable'); }
     finally { busy = false; input.disabled = false; modal.querySelector('#proChatForm button').disabled = false; input.value = ''; input.focus(); }
   }
 
