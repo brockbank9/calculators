@@ -12,7 +12,9 @@
     "required": ["OPENAI_API_KEY"]
   },
   "vars": {
-    "OPENAI_MODEL": "gpt-5-mini"
+    "OPENAI_MODEL": "gpt-5-mini",
+    "OPENAI_TTS_MODEL": "gpt-4o-mini-tts",
+    "OPENAI_TTS_VOICE": "cedar"
   },
   "analytics_engine_datasets": [
     {
