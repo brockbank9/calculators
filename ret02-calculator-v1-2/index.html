@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RET02 Retirement Calculator — Version 1.2</title>
+  <link rel="stylesheet" href="../ret02-calculator/styles.css">
+  <link rel="stylesheet" href="../ret02-calculator-v1-1/prototype.css">
+  <link rel="stylesheet" href="aipro.css">
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Release 1.2 prototype</p>
+        <h1>Retirement Income Planning Calculator</h1>
+        <p class="subhead">Version 1.1 calculator with optional AI Assistant and AI Pro experiences.</p>
+      </div>
+      <div class="feature-badges" aria-label="Enabled features">
+        <span class="prototype-badge">AI Assistant Enabled</span>
+        <span class="aipro-badge">AI Pro Enabled</span>
+      </div>
+    </header>
+
+    <section class="workspace">
+      <aside class="panel sidebar">
+        <form id="calc-form" class="inputs-form">
+          <h2>Inputs</h2>
+          <div class="input-list">
+            <label><span>Current age <button class="ai-help-icon" type="button" data-field="currentAge" aria-label="Ask AI Assistant about current age"><span aria-hidden="true">💬</span></button></span><input id="currentAge" type="number"></label>
+            <label><span>Current gross annual income <button class="ai-help-icon" type="button" data-field="currentIncome" aria-label="Ask AI Assistant about current income"><span aria-hidden="true">💬</span></button></span><input id="currentIncome" type="text" inputmode="numeric"></label>
+            <label><span>Spouse annual income <button class="ai-help-icon" type="button" data-field="spouseIncome" aria-label="Ask AI Assistant about spouse income"><span aria-hidden="true">💬</span></button></span><input id="spouseIncome" type="text" inputmode="numeric"></label>
+            <label><span>Current retirement savings <button class="ai-help-icon" type="button" data-field="currentSavings" aria-label="Ask AI Assistant about retirement savings"><span aria-hidden="true">💬</span></button></span><input id="currentSavings" type="text" inputmode="numeric"></label>
+            <label><span>Inflation / salary increase <button class="ai-help-icon" type="button" data-field="inflation" aria-label="Ask AI Assistant about inflation"><span aria-hidden="true">💬</span></button></span><input id="inflation" type="text" inputmode="decimal" class="percent-input"></label>
+            <label><span>Desired retirement age <button class="ai-help-icon" type="button" data-field="retireAge" aria-label="Ask AI Assistant about retirement age"><span aria-hidden="true">💬</span></button></span><input id="retireAge" type="number"></label>
+            <label><span>Years of retirement income <button class="ai-help-icon" type="button" data-field="retireYears" aria-label="Ask AI Assistant about retirement years"><span aria-hidden="true">💬</span></button></span><input id="retireYears" type="number"></label>
+            <label><span>Income desired at retirement <button class="ai-help-icon" type="button" data-field="desiredPct" aria-label="Ask AI Assistant about desired retirement income"><span aria-hidden="true">💬</span></button></span><input id="desiredPct" type="text" inputmode="decimal" class="percent-input"></label>
+            <label><span>Pre-retirement return <button class="ai-help-icon" type="button" data-field="preReturn" aria-label="Ask AI Assistant about pre-retirement return"><span aria-hidden="true">💬</span></button></span><input id="preReturn" type="text" inputmode="decimal" class="percent-input"></label>
+            <label><span>Post-retirement return <button class="ai-help-icon" type="button" data-field="postReturn" aria-label="Ask AI Assistant about post-retirement return"><span aria-hidden="true">💬</span></button></span><input id="postReturn" type="text" inputmode="decimal" class="percent-input"></label>
+            <label><span>Include Social Security <button class="ai-help-icon" type="button" data-field="includeSS" aria-label="Ask AI Assistant about Social Security"><span aria-hidden="true">💬</span></button></span><select id="includeSS"><option>Y</option><option>N</option></select></label>
+            <label><span>Single or married <button class="ai-help-icon" type="button" data-field="marital" aria-label="Ask AI Assistant about marital status"><span aria-hidden="true">💬</span></button></span><select id="marital"><option>M</option><option>S</option></select></label>
+          </div>
+          <div id="softWarnings" class="soft-warnings" style="display:none;"></div>
+          <div class="actions"><button type="submit">Recalculate</button><button type="button" id="resetBtn" class="secondary">Reset</button></div>
+        </form>
+      </aside>
+
+      <section class="main-column">
+        <section class="panel scenario-toolbar" aria-label="Scenario and AI Pro controls">
+          <div class="scenario-title"><strong>Scenarios</strong><span>Save or reopen calculator inputs</span></div>
+          <input id="scenarioName" type="text" placeholder="Scenario name" aria-label="Scenario name">
+          <select id="scenarioSelect" aria-label="Saved scenarios"><option value="">Select a saved scenario</option></select>
+          <div class="scenario-actions"><button type="button" id="saveScenarioBtn" class="secondary">Save</button><button type="button" id="loadScenarioBtn" class="secondary">Load</button><button type="button" id="deleteScenarioBtn" class="secondary">Delete</button></div>
+          <button type="button" id="askProBtn" class="ask-pro-button">Ask a Pro</button>
+        </section>
+
+        <section class="panel summary">
+          <div class="result-heading"><h2>Results</h2><button class="ai-help-icon ai-results-icon" type="button" data-field="resultsSummary" aria-label="Ask AI Assistant to explain these results"><span aria-hidden="true">💬</span></button></div>
+          <div id="primaryMessage" class="message"></div><div id="waitMessage" class="message subtle"></div><div class="metrics" id="metrics"></div>
+        </section>
+        <section class="panel analysis-panel"><h2>Retirement Analysis</h2><div class="chart-container"><canvas id="projectionChart"></canvas></div></section>
+        <section class="panel table-panel"><div class="panel-header"><h2>Projection</h2><button type="button" id="exportPdfBtn" class="secondary">Export PDF</button></div><div class="table-wrap"><table id="projectionTable"><thead></thead><tbody></tbody></table></div></section>
+      </section>
+    </section>
+  </main>
+
+  <div id="aiModal" class="ai-modal" hidden>
+    <div class="ai-modal-backdrop" data-close-ai></div>
+    <section class="ai-dialog" role="dialog" aria-modal="true" aria-labelledby="aiDialogTitle">
+      <header class="ai-dialog-header"><div class="ai-heading"><div class="ai-avatar" aria-hidden="true"><span>💬</span></div><div><p class="ai-kicker">AI Retirement Assistant</p><h2 id="aiDialogTitle">Input help</h2></div></div><button type="button" class="ai-close" data-close-ai aria-label="Close AI Assistant">×</button></header>
+      <div id="aiConversation" class="ai-conversation" aria-live="polite"></div>
+      <div id="aiSuggestionBar" class="ai-suggestion-bar" hidden><span id="aiSuggestedValue"></span><button id="useSuggestionBtn" type="button">Apply Value</button></div>
+      <form id="aiChatForm" class="ai-chat-form"><input id="aiQuestion" type="text" placeholder="Ask the AI Assistant a follow-up question…" autocomplete="off"><button type="submit">Ask</button></form>
+      <p class="ai-disclaimer">The AI Assistant provides educational information about the calculator and general planning concepts. It does not provide financial, investment, tax, or legal advice.</p>
+    </section>
+  </div>
+
+  <div id="proPreview" class="pro-preview" hidden>
+    <div class="pro-preview-backdrop" data-close-pro></div>
+    <section class="pro-preview-card" role="dialog" aria-modal="true" aria-labelledby="proPreviewTitle">
+      <button type="button" class="pro-preview-close" data-close-pro aria-label="Close Ask a Pro preview">×</button>
+      <p class="pro-kicker">Version 1.2 preview</p>
+      <h2 id="proPreviewTitle">Ask a Pro</h2>
+      <p>This button will launch the new AI Pro workflow. The detailed interaction will be added in the next step.</p>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+  <script src="../ret02-calculator/formulas.js"></script>
+  <script src="../ret02-calculator/ui.js"></script>
+  <script src="../ret02-calculator/app.js"></script>
+  <script src="../ret02-calculator-v1-1/ai-help.js"></script>
+  <script src="aipro.js"></script>
+</body>
+</html>
