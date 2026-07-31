@@ -2,6 +2,24 @@
   const params = new URLSearchParams(window.location.search);
   if (params.get('aipro') !== 'on') return;
 
+  const RELEASE = '1.2.1';
+  const PRESENTER = 'presenter-default';
+
+  function applyReleasePresentation() {
+    document.title = `RET02 Retirement Calculator — Version ${RELEASE}`;
+    const eyebrow = document.querySelector('.hero .eyebrow');
+    if (eyebrow) eyebrow.textContent = `Release ${RELEASE}`;
+    const previewVersion = document.querySelector('#proPreview .pro-kicker');
+    if (previewVersion && /^Version\s/i.test(previewVersion.textContent || '')) previewVersion.textContent = `Version ${RELEASE}`;
+
+    const avatar = document.getElementById('proAvatar');
+    if (avatar) {
+      avatar.classList.add(PRESENTER);
+      avatar.dataset.presenter = PRESENTER;
+      avatar.setAttribute('aria-label', 'AI professional presenter');
+    }
+  }
+
   function normalizeScenarioLanguage(text) {
     let normalized = String(text || '');
 
@@ -56,6 +74,10 @@
 
     return normalized;
   }
+
+  applyReleasePresentation();
+  const preview = document.getElementById('proPreview');
+  if (preview) new MutationObserver(applyReleasePresentation).observe(preview, { childList: true, subtree: true });
 
   document.addEventListener('submit', event => {
     if (event.target?.id !== 'proChatForm') return;
