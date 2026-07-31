@@ -20,10 +20,7 @@
           .replace(/\bwithout\s+social security\b/ig, 'exclude Social Security')
           .replace(/\bdo not include\s+social security\b/ig, 'exclude Social Security')
           .replace(/\bdon't include\s+social security\b/ig, 'exclude Social Security');
-
-        if (!/\b(exclude|without|remove|turn off)\b/i.test(normalized)) {
-          normalized += ' exclude Social Security';
-        }
+        if (!/\b(exclude|without|remove|turn off)\b/i.test(normalized)) normalized += ' exclude Social Security';
       } else if (positive) {
         normalized = normalized
           .replace(/social security[^.!?]{0,30}\b(?:to|=|as)\s*y\b/ig, 'include Social Security')
@@ -32,15 +29,27 @@
       }
     }
 
-    if (/marital|married|single/i.test(normalized)) {
-      const explicitS = /(?:marital(?: status)?|single or married)[^.!?]{0,30}\b(?:to|=|as)\s*s\b/i.test(normalized);
-      const explicitM = /(?:marital(?: status)?|single or married)[^.!?]{0,30}\b(?:to|=|as)\s*m\b/i.test(normalized);
-      if (explicitS || /\b(not married|unmarried|single|no spouse)\b/i.test(normalized)) {
+    if (/marital|married|single|spouse|\b[ms]\b/i.test(normalized)) {
+      const fromTo = normalized.match(/(?:marital(?: status)?|single or married)?[^.!?]{0,40}\bfrom\s+(married|single|m|s)\s+to\s+(married|single|m|s)\b/i);
+      const destination = fromTo ? fromTo[2].toLowerCase() : '';
+      const explicitS = destination === 'single' || destination === 's' || /(?:marital(?: status)?|single or married)[^.!?]{0,30}\b(?:to|=|as)\s*s\b/i.test(normalized);
+      const explicitM = destination === 'married' || destination === 'm' || /(?:marital(?: status)?|single or married)[^.!?]{0,30}\b(?:to|=|as)\s*m\b/i.test(normalized);
+      const singleMeaning = explicitS || /\b(not married|unmarried|single|no spouse|without spouse|divorced|widowed)\b/i.test(normalized);
+      const marriedMeaning = explicitM || /\b(married|with spouse|spouse included)\b/i.test(normalized);
+
+      if (singleMeaning) {
         normalized = normalized
+          .replace(/\bfrom\s+(married|m)\s+to\s+(single|s)\b/ig, 'marital status to single')
           .replace(/(?:marital(?: status)?|single or married)[^.!?]{0,30}\b(?:to|=|as)\s*s\b/ig, 'marital status to single')
-          .replace(/\bnot married\b/ig, 'single');
-      } else if (explicitM || /\bmarried|with spouse\b/i.test(normalized)) {
-        normalized = normalized.replace(/(?:marital(?: status)?|single or married)[^.!?]{0,30}\b(?:to|=|as)\s*m\b/ig, 'marital status to married');
+          .replace(/\bnot married\b/ig, 'single')
+          .replace(/\bunmarried\b/ig, 'single')
+          .replace(/\bno spouse\b/ig, 'single')
+          .replace(/\bwithout spouse\b/ig, 'single');
+        if (!/\bsingle\b/i.test(normalized)) normalized += ' single';
+      } else if (marriedMeaning) {
+        normalized = normalized
+          .replace(/\bfrom\s+(single|s)\s+to\s+(married|m)\b/ig, 'marital status to married')
+          .replace(/(?:marital(?: status)?|single or married)[^.!?]{0,30}\b(?:to|=|as)\s*m\b/ig, 'marital status to married');
         if (!/\bmarried\b/i.test(normalized)) normalized += ' married';
       }
     }
