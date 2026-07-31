@@ -6,7 +6,8 @@
   <title>RET02 Retirement Calculator — Version 1.2</title>
   <link rel="stylesheet" href="../ret02-calculator/styles.css">
   <link rel="stylesheet" href="../ret02-calculator-v1-1/prototype.css">
-  <link rel="stylesheet" href="aipro.css">
+  <link rel="stylesheet" href="aipro.css?v=1203">
+  <link rel="stylesheet" href="avatar.css?v=1203">
 </head>
 <body>
   <main class="page">
@@ -14,11 +15,11 @@
       <div>
         <p class="eyebrow">Release 1.2 prototype</p>
         <h1>Retirement Income Planning Calculator</h1>
-        <p class="subhead">Version 1.1 calculator with optional AI Assistant and AI Pro experiences.</p>
+        <p class="subhead">Version 1.1 calculator with optional AI Assistant and AI Professional experiences.</p>
       </div>
       <div class="feature-badges" aria-label="Enabled features">
         <span class="prototype-badge">AI Assistant Enabled</span>
-        <span class="aipro-badge">AI Pro Enabled</span>
+        <span class="aipro-badge">AI Professional Enabled</span>
       </div>
     </header>
 
@@ -46,12 +47,12 @@
       </aside>
 
       <section class="main-column">
-        <section class="panel scenario-toolbar" aria-label="Scenario and AI Pro controls">
+        <section class="panel scenario-toolbar" aria-label="Scenario and AI Professional controls">
           <div class="scenario-title"><strong>Scenarios</strong><span>Save or reopen calculator inputs</span></div>
           <input id="scenarioName" type="text" placeholder="Scenario name" aria-label="Scenario name">
           <select id="scenarioSelect" aria-label="Saved scenarios"><option value="">Select a saved scenario</option></select>
           <div class="scenario-actions"><button type="button" id="saveScenarioBtn" class="secondary">Save</button><button type="button" id="loadScenarioBtn" class="secondary">Load</button><button type="button" id="deleteScenarioBtn" class="secondary">Delete</button></div>
-          <button type="button" id="askProBtn" class="ask-pro-button">Ask a Pro</button>
+          <button type="button" id="askProBtn" class="ask-pro-button">Ask a Professional</button>
         </section>
 
         <section class="panel summary">
@@ -78,10 +79,10 @@
   <div id="proPreview" class="pro-preview" hidden>
     <div class="pro-preview-backdrop" data-close-pro></div>
     <section class="pro-preview-card" role="dialog" aria-modal="true" aria-labelledby="proPreviewTitle">
-      <button type="button" class="pro-preview-close" data-close-pro aria-label="Close Ask a Pro preview">×</button>
+      <button type="button" class="pro-preview-close" data-close-pro aria-label="Close Ask a Professional preview">×</button>
       <p class="pro-kicker">Version 1.2 preview</p>
-      <h2 id="proPreviewTitle">Ask a Pro</h2>
-      <p>This button will launch the new AI Pro workflow. The detailed interaction will be added in the next step.</p>
+      <h2 id="proPreviewTitle">Ask a Professional</h2>
+      <p>This button launches the AI Professional workflow.</p>
     </section>
   </div>
 
@@ -92,6 +93,6 @@
   <script src="../ret02-calculator/ui.js"></script>
   <script src="../ret02-calculator/app.js"></script>
   <script src="../ret02-calculator-v1-1/ai-help.js"></script>
-  <script src="aipro.js"></script>
+  <script src="aipro.js?v=1203"></script>
 </body>
 </html>
