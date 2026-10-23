@@ -213,7 +213,7 @@
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 7000);
     const context = readInputs();
-    fetch('https://retirement-assistant-staging.brockbank.workers.dev/scenario', {
+    fetch('https://retirement-assistant-v1-3.brockbank.workers.dev/scenario', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({question:original,calculatorContext:context}),
       signal:controller.signal
