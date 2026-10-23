@@ -111,9 +111,9 @@
     }
 
     if (/exclude|without|remove|turn off/.test(q) && /social security/.test(q)) changes.includeSS = 'N';
-    if (/include|with|turn on/.test(q) && /social security/.test(q)) changes.includeSS = 'Y';
+    if (/\b(?:include|with|turn on)\b/.test(q) && /social security/.test(q) && !/\b(?:no|exclude|without|remove|turn off)\b/.test(q)) changes.includeSS = 'Y';
     if (/\bsingle\b/.test(q)) changes.marital = 'S';
-    if (/\bmarried\b/.test(q)) changes.marital = 'M';
+    if (/\bmarried\b/.test(q) && !/\b(?:to|as)\s+single\b/.test(q)) changes.marital = 'M';
 
     const intent = /(what if|rerun|re-run|recalculate|run the calculator|compare|scenario|change|increase|decrease|higher|lower|set|use)/.test(q);
     const mentionedField = mappings.some(([,phrases]) => phrases.some(p => new RegExp(p).test(q))) || /social security|single|married/.test(q);
@@ -195,7 +195,7 @@
     const input = document.getElementById('proQuestion');
     const text = input?.value.trim() || '';
     const parsed = parseScenarioRequest(text);
-    const scenarioIntent = parsed.intent || /\\b(?:what if|rerun|re-run|recalculate|compare|scenario|change|set|use|exclude|include|remove|without|single|married|social security)\\b/i.test(text);
+    const scenarioIntent = parsed.intent || /\b(?:what if|rerun|re-run|recalculate|compare|scenario|change|set|use|exclude|include|remove|without|single|married|social security)\b/i.test(text);
     if (!scenarioIntent) return;
     event.preventDefault();
     event.stopImmediatePropagation();
