@@ -4,7 +4,7 @@
 
   document.body.classList.add('aipro-enabled');
 
-  const chatEndpoint = params.get('aiendpoint') || 'https://retirement-assistant-staging.brockbank.workers.dev/chat';
+  const chatEndpoint = params.get('aiendpoint') || 'https://retirement-assistant-v1-3.brockbank.workers.dev/chat';
   const speechEndpoint = params.get('aiprovoiceendpoint') || chatEndpoint.replace(/\/chat$/, '/speech');
   const launchButton = document.getElementById('askProBtn');
   const modal = document.getElementById('proPreview');
