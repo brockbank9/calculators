@@ -1,5 +1,6 @@
 const ALLOWED_ORIGINS = new Set([
-  'https://brockbank9.github.io'
+  'https://brockbank9.github.io',
+  'https://curly-enigma-gxq579xrwv6phgv-8080.app.github.dev'
 ]);
 
 const SYSTEM_INSTRUCTIONS = `You are the AI Retirement Assistant embedded in an educational retirement calculator.
