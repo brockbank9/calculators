@@ -1,0 +1,7 @@
+name = "retirement-assistant-staging"
+main = "src/index-v1-3.js"
+compatibility_date = "2026-10-23"
+
+# Deploy manually only after configuring OPENAI_API_KEY as a staging secret.
+# wrangler deploy --config wrangler.v1-3-staging.toml
+# Do not change the production worker configuration.
