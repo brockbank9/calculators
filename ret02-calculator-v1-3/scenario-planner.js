@@ -230,7 +230,7 @@
       else { setStatus('Need a value'); setCaption('<p>Please specify which input to change and its new value.</p>'); }
     }).catch(() => {
       if (Object.keys(parsed.changes).length) runScenario(parsed.changes);
-      else { setStatus('Staging unavailable'); setCaption('<p>The staging interpreter is unavailable. No calculator inputs were changed.</p>', true); }
+      else { setStatus('AI service unavailable'); setCaption('<p>The scenario interpreter is unavailable. No calculator inputs were changed.</p>', true); }
     })
       .finally(() => clearTimeout(timeout));
   }, true);
