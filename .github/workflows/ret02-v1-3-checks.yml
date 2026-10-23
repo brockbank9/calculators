@@ -1,0 +1,25 @@
+name: RET02 v1.3 checks
+on:
+  push:
+    branches: [ret02-v1.3-development]
+  pull_request:
+    paths:
+      - 'ret02-calculator-v1-3/**'
+      - 'retirement-assistant-worker/src/index-v1-3.js'
+jobs:
+  syntax-and-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check ret02-calculator-v1-3/scenario-planner.js
+          node --check ret02-calculator-v1-3/scenario-validator.js
+          node --check ret02-calculator-v1-3/scenario-command.js
+          node --check retirement-assistant-worker/src/index-v1-3.js
+      - name: Run scenario unit tests
+        working-directory: ret02-calculator-v1-3
+        run: npm test
