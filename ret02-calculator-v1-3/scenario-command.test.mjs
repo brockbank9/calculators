@@ -17,3 +17,11 @@ const transition = browser.window.RET13_PARSE_FALLBACK('Compare from married to 
 assert.equal(transition.changes.marital,'S','Transition to single must not revert to married');
 assert.equal(transition.changes.includeSS,'N');
 console.log('Scenario request regression tests passed');
+
+const numeric = browser.window.RET13_PARSE_FALLBACK('Compare a scenario where my retirement age is 67, inflation is 4%, and my pre-retirement investment return is 7%.');
+assert.equal(numeric.changes.retireAge,67);
+assert.equal(numeric.changes.inflation,0.04);
+assert.equal(numeric.changes.preReturn,0.07,'Pre-retirement investment return must be recognized');
+const post = browser.window.RET13_PARSE_FALLBACK('Compare post-retirement investment return at 5%');
+assert.equal(post.changes.postReturn,0.05);
+console.log('Multi-field numeric scenario tests passed');
