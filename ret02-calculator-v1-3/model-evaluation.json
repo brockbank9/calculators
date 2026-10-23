@@ -1,0 +1,38 @@
+{
+  "purpose": "Compare candidate models without changing production",
+  "baselineModel": "gpt-5-mini",
+  "candidateModel": "Set after verifying API availability and pricing",
+  "evaluationCriteria": [
+    "correct intent and field extraction",
+    "correct Y/N and M/S values",
+    "no unsolicited input changes",
+    "educational non-advisory answer",
+    "latency and token cost"
+  ],
+  "testCases": [
+    {
+      "question": "Rerun with no Social Security",
+      "expected": {
+        "includeSocialSecurity": "N"
+      }
+    },
+    {
+      "question": "Change marital status from married to single",
+      "expected": {
+        "maritalStatus": "S"
+      }
+    },
+    {
+      "question": "Set Social Security to Y and marital status to M",
+      "expected": {
+        "includeSocialSecurity": "Y",
+        "maritalStatus": "M"
+      }
+    },
+    {
+      "question": "What is the difference between nominal and real returns?",
+      "expected": "explanation only; no changes"
+    }
+  ],
+  "deploymentPolicy": "Do not switch production model without passing evaluation and user approval"
+}
