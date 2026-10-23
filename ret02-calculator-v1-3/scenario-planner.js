@@ -110,10 +110,10 @@
       }
     }
 
-    if (/exclude|without|remove|turn off/.test(q) && /social security/.test(q)) changes.includeSS = 'N';
+    if (/\b(?:no|exclude|without|remove|turn off)\b/.test(q) && /social security/.test(q)) changes.includeSS = 'N';
     if (/\b(?:include|with|turn on)\b/.test(q) && /social security/.test(q) && !/\b(?:no|exclude|without|remove|turn off)\b/.test(q)) changes.includeSS = 'Y';
     if (/\bsingle\b/.test(q)) changes.marital = 'S';
-    if (/\bmarried\b/.test(q) && !/\b(?:to|as)\s+single\b/.test(q)) changes.marital = 'M';
+    if (/\bmarried\b/.test(q) && !/\bsingle\b/.test(q)) changes.marital = 'M';
 
     const intent = /(what if|rerun|re-run|recalculate|run the calculator|compare|scenario|change|increase|decrease|higher|lower|set|use)/.test(q);
     const mentionedField = mappings.some(([,phrases]) => phrases.some(p => new RegExp(p).test(q))) || /social security|single|married/.test(q);
@@ -225,7 +225,7 @@
       const result = typeof validator === 'function'
         ? validator(data, context)
         : {ok:false};
-      if (result.ok) runScenario(result.changes);
+      if (result.ok) runScenario({...result.changes, ...parsed.changes});
       else if (Object.keys(parsed.changes).length) runScenario(parsed.changes);
       else { setStatus('Need a value'); setCaption('<p>Please specify which input to change and its new value.</p>'); }
     }).catch(() => {
