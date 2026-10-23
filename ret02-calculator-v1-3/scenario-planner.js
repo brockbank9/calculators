@@ -195,11 +195,12 @@
     const input = document.getElementById('proQuestion');
     const text = input?.value.trim() || '';
     const parsed = parseScenarioRequest(text);
-    if (!parsed.intent) return;
+    const scenarioIntent = parsed.intent || /\\b(?:what if|rerun|re-run|recalculate|compare|scenario|change|set|use|exclude|include|remove|without|single|married|social security)\\b/i.test(text);
+    if (!scenarioIntent) return;
     event.preventDefault();
     event.stopImmediatePropagation();
 
-    if (!Object.keys(parsed.changes).length) {
+    if (!Object.keys(parsed.changes).length && !window.RET13_VALIDATE_SCENARIO) {
       setCaption('<p>I can run a temporary comparison, but I need a specific value. For example: <strong>“Set inflation to 4% and compare it with my current plan.”</strong></p>');
       setStatus('Need a value');
       return;
@@ -212,7 +213,7 @@
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 7000);
     const context = readInputs();
-    fetch('https://retirement-assistant.brockbank.workers.dev/scenario', {
+    fetch('https://retirement-assistant-staging.brockbank.workers.dev/scenario', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({question:original,calculatorContext:context}),
       signal:controller.signal
@@ -224,8 +225,13 @@
       const result = typeof validator === 'function'
         ? validator(data, context)
         : {ok:false};
-      runScenario(result.ok ? result.changes : parsed.changes);
-    }).catch(() => runScenario(parsed.changes))
+      if (result.ok) runScenario(result.changes);
+      else if (Object.keys(parsed.changes).length) runScenario(parsed.changes);
+      else { setStatus('Need a value'); setCaption('<p>Please specify which input to change and its new value.</p>'); }
+    }).catch(() => {
+      if (Object.keys(parsed.changes).length) runScenario(parsed.changes);
+      else { setStatus('Staging unavailable'); setCaption('<p>The staging interpreter is unavailable. No calculator inputs were changed.</p>', true); }
+    })
       .finally(() => clearTimeout(timeout));
   }, true);
 
