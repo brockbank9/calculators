@@ -92,7 +92,7 @@
     const mappings = [
       ['inflation', ['inflation']], ['retireAge', ['retire(?:ment)? age','retire at','retirement at']],
       ['retireYears', ['years? of retirement','retirement period']], ['desiredPct', ['income desired','replacement rate','retirement income']],
-      ['preReturn', ['pre-retirement return','pre retirement return']], ['postReturn', ['post-retirement return','post retirement return']],
+      ['preReturn', ['pre[- ]retirement (?:investment )?returns?','(?:investment )?returns? (?:before|prior to) retirement','(?:investment )?returns? pre[- ]retirement']], ['postReturn', ['post[- ]retirement (?:investment )?returns?','(?:investment )?returns? (?:after|during) retirement','(?:investment )?returns? post[- ]retirement']],
       ['currentSavings', ['current (?:retirement )?savings','retirement savings']], ['currentIncome', ['current (?:gross )?(?:annual )?income']],
       ['spouseIncome', ['spouse (?:annual )?income']], ['currentAge', ['current age']]
     ];
