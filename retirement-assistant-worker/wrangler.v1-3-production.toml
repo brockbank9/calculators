@@ -1,0 +1,6 @@
+name = "retirement-assistant-v1-3"
+main = "src/index-v1-3-production.js"
+compatibility_date = "2026-10-23"
+
+# Dedicated v1.3 production Worker. Does not overwrite retirement-assistant.
+# Requires its own OPENAI_API_KEY secret before deployment.
